@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ed_drle_redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ed_drle_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ledger_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    restart: always
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: ed_drle_localstack
+    ports:
+      - "127.0.0.1:4566:4566"            # LocalStack Edge Port
+      - "127.0.0.1:4510-4559:4510-4559"  # external services port range
+    environment:
+      - SERVICES=dynamodb,lambda,s3,events,stepfunctions,apigateway,sns,sqs,cloudwatch,iam,logs
+      - AWS_DEFAULT_REGION=us-east-1
+      - EDGE_PORT=4566
+    volumes:
+      - "./localstack:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    restart: always

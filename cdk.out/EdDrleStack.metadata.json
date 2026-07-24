@@ -1,0 +1,1052 @@
+{
+  "/EdDrleStack": [
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ActiveHoldsTable": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "ActiveHoldsTableDAC9E8B7"
+      }
+    }
+  ],
+  "/EdDrleStack/IdempotencyTable": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "IdempotencyTable22A5A209"
+      }
+    }
+  ],
+  "/EdDrleStack/InventoryCountersTable": [
+    {
+      "type": "aws:cdk:hasPhysicalName",
+      "data": {
+        "Ref": "InventoryCountersTable07CEB0D5"
+      }
+    }
+  ],
+  "/EdDrleStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
+    {
+      "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
+      "data": true
+    }
+  ],
+  "/EdDrleStack/BootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/CheckBootstrapVersion": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CheckBootstrapVersion"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/ActiveHoldsTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ActiveHoldsTableDAC9E8B7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:60:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/IdempotencyTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "IdempotencyTable22A5A209"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:75:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/InventoryCountersTable/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "InventoryCountersTable07CEB0D5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Table2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:83:40)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaDLQ/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaDLQ09832D30"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Queue2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:92:25)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SlackAuditTopic/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SlackAuditTopic39F67EA3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Topic2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:96:33)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/PaymentGatewaySecret/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PaymentGatewaySecretA18D2FE2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Secret2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:103:31)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/HoldLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HoldLambdaA8657749"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:122:28)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/StreamPublisherLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "StreamPublisherLambda67D3D6F9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:132:39)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/PaymentLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PaymentLambda0A43C2C9"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:144:31)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/LedgerWriterLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LedgerWriterLambda939061EC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:152:36)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/CompensateLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CompensateLambdaF1DCC855"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:160:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReconciliationLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReconciliationLambda48A3990B"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:169:38)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/AuditReconcilerLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuditReconcilerLambda7467B4C3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:178:39)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SettlementIngestionLambda/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementIngestionLambda0006D24E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:186:43)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaStateMachine/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaStateMachine1A568E4D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StateMachine2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:212:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/AuditStateMachine/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuditStateMachineE6329614"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StateMachine2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:229:35)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/EdDrleEventBus/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "EdDrleEventBus29D2C7F5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new EventBus2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:241:32)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaTriggerRule/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaTriggerRuleBF485992"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Rule2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:246:26)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReconciliationSchedule/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReconciliationScheduleAC121908"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Rule2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:255:22)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReconciliationSchedule/AllowEventRuleEdDrleStackReconciliationLambda5B7B7EEE": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReconciliationScheduleAllowEventRuleEdDrleStackReconciliationLambda5B7B7EEECE422DC5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.<anonymous> in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:258:14)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SettlementBucket/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementBucketBE51E84A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:264:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketAutoDeleteObjects"
+      }
+    }
+  ],
+  "/EdDrleStack/SettlementBucket/AllowBucketNotificationsToEdDrleStackSettlementIngestionLambda45BEE9D8": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementBucketAllowBucketNotificationsToEdDrleStackSettlementIngestionLambda45BEE9D8D1999C1A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addEventNotification in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:270:26)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addEventNotification in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:270:26)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApiB66E1A28"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:274:21)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Account": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApiAccountE08AC5F1"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:274:21)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Endpoint": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApiEndpointBE712419"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:274:21)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/HoldLambdaErrorAlarm/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HoldLambdaErrorAlarmEDC2FCAB"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:284:9)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaSFNFailedAlarm/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaSFNFailedAlarmEDF57FAD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:290:9)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/DlqDepthAlarm/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "DlqDepthAlarmD18F3374"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Alarm2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:296:9)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/CDKMetadata/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CDKMetadata"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib, node internals...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/HoldLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HoldLambdaServiceRole5BC23CBD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:122:28)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/StreamPublisherLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "StreamPublisherLambdaServiceRoleA2EC2D8A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:132:39)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/StreamPublisherLambda/DynamoDBEventSource:EdDrleStackActiveHoldsTable7B9158AB/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "StreamPublisherLambdaDynamoDBEventSourceEdDrleStackActiveHoldsTable7B9158AB2DA8C3FA"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addEventSource in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:138:31)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/PaymentLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PaymentLambdaServiceRoleA2D46936"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:144:31)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/LedgerWriterLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LedgerWriterLambdaServiceRole0B49A3AF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:152:36)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/CompensateLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CompensateLambdaServiceRole9A3D3673"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:160:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReconciliationLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReconciliationLambdaServiceRole697F2EB7"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:169:38)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/AuditReconcilerLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuditReconcilerLambdaServiceRole8357A340"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:178:39)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SettlementIngestionLambda/ServiceRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementIngestionLambdaServiceRole51C82475"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Function2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:186:43)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaStateMachine/Role/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaStateMachineRole15C0C256"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StateMachine2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:212:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaStateMachine/EventsRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaStateMachineEventsRoleC9001B3E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new SfnStateMachine in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:253:28)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/AuditStateMachine/Role/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuditStateMachineRole5C7FD52C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StateMachine2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:229:35)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/SettlementBucket/Policy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementBucketPolicy9EA484EF"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new Bucket2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:264:34)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    },
+    {
+      "type": "aws:cdk:analytics:mixin",
+      "data": {
+        "mixin": "aws-cdk-lib.aws_s3.mixins.BucketPolicyStatements"
+      }
+    }
+  ],
+  "/EdDrleStack/SettlementBucket/AutoDeleteObjectsCustomResource/Default": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementBucketAutoDeleteObjectsCustomResource78566872"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/SettlementBucket/Notifications/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementBucketNotifications262CC141"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addEventNotification in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:270:26)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addEventNotification in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:270:26)"
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/CloudWatchRole/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApiCloudWatchRole6CF3F3FC"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:274:21)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Deployment/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApiDeploymentBCEFD038d299b3a53d662ec3430b23ff77dc3fb5"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:274:21)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/DeploymentStage.prod/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApiDeploymentStageprod22EF6B2D"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new RestApi2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:274:21)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/HoldLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "HoldLambdaServiceRoleDefaultPolicy08D45FBE"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/StreamPublisherLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "StreamPublisherLambdaServiceRoleDefaultPolicyB6E2F94E"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/PaymentLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "PaymentLambdaServiceRoleDefaultPolicyFDF6FB95"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantRead in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:150:23)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)"
+      ]
+    }
+  ],
+  "/EdDrleStack/LedgerWriterLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "LedgerWriterLambdaServiceRoleDefaultPolicyCD87A91C"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/CompensateLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "CompensateLambdaServiceRoleDefaultPolicyFF740F31"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/ReconciliationLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReconciliationLambdaServiceRoleDefaultPolicyAD4034BD"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/AuditReconcilerLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuditReconcilerLambdaServiceRoleDefaultPolicy1673BC61"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...aws-cdk-lib...",
+        "(no user code in 10 frames, use --stack-trace-limit to capture more)"
+      ]
+    }
+  ],
+  "/EdDrleStack/SettlementIngestionLambda/ServiceRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementIngestionLambdaServiceRoleDefaultPolicy3E916FD3"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.grantStartExecution in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:235:27)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)"
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaStateMachine/Role/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaStateMachineRoleDefaultPolicy94E02636"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StateMachine2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:212:34)"
+      ]
+    }
+  ],
+  "/EdDrleStack/SagaStateMachine/EventsRole/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SagaStateMachineEventsRoleDefaultPolicy0FB6A8B6"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new SfnStateMachine in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:253:28)"
+      ]
+    }
+  ],
+  "/EdDrleStack/AuditStateMachine/Role/DefaultPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "AuditStateMachineRoleDefaultPolicyC23260F2"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...new StateMachine2 in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:229:35)"
+      ]
+    }
+  ],
+  "/EdDrleStack/SettlementBucket/Notifications/HandlerPolicy/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "SettlementBucketNotificationsHandlerPolicy0740C29A"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addEventNotification in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:270:26)"
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Default/reserve/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApireserveC1978AF4"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...RootResource.addResource in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:279:42)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Default/reserve/POST/ApiPermission.EdDrleStackReservationApi372D51DD.POST..reserve": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApireservePOSTApiPermissionEdDrleStackReservationApi372D51DDPOSTreserve782AD393"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:280:25)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Default/reserve/POST/ApiPermission.Test.EdDrleStackReservationApi372D51DD.POST..reserve": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApireservePOSTApiPermissionTestEdDrleStackReservationApi372D51DDPOSTreserve6829CC33"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:280:25)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ],
+  "/EdDrleStack/ReservationApi/Default/reserve/POST/Resource": [
+    {
+      "type": "aws:cdk:logicalId",
+      "data": "ReservationApireservePOST869E1B84"
+    },
+    {
+      "type": "aws:cdk:creationStack",
+      "data": [
+        "...WrappedClass.addMethod in aws-cdk-lib...",
+        "new EdDrleStack (D:\\eddrle\\dist\\infra\\lib\\ed-drle-stack.js:280:25)",
+        "<anonymous> (D:\\eddrle\\dist\\infra\\bin\\ed-drle.js:39:1)",
+        "...node internals..."
+      ]
+    }
+  ]
+}

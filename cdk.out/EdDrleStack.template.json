@@ -1,0 +1,2526 @@
+{
+ "Resources": {
+  "ActiveHoldsTableDAC9E8B7": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "HoldID",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "EventID",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "Status",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "GlobalSecondaryIndexes": [
+     {
+      "IndexName": "EventIDStatusIndex",
+      "KeySchema": [
+       {
+        "AttributeName": "EventID",
+        "KeyType": "HASH"
+       },
+       {
+        "AttributeName": "Status",
+        "KeyType": "RANGE"
+       }
+      ],
+      "Projection": {
+       "ProjectionType": "ALL"
+      }
+     }
+    ],
+    "KeySchema": [
+     {
+      "AttributeName": "HoldID",
+      "KeyType": "HASH"
+     }
+    ],
+    "StreamSpecification": {
+     "StreamViewType": "NEW_IMAGE"
+    },
+    "TableName": "ActiveHolds",
+    "TimeToLiveSpecification": {
+     "AttributeName": "ExpirationTimestamp",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ActiveHoldsTable/Resource"
+   }
+  },
+  "IdempotencyTable22A5A209": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "IdempotencyKey",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "IdempotencyKey",
+      "KeyType": "HASH"
+     }
+    ],
+    "TableName": "Idempotency",
+    "TimeToLiveSpecification": {
+     "AttributeName": "expirationTime",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/IdempotencyTable/Resource"
+   }
+  },
+  "InventoryCountersTable07CEB0D5": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "EventID",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "EventID",
+      "KeyType": "HASH"
+     }
+    ],
+    "TableName": "InventoryCounters"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/InventoryCountersTable/Resource"
+   }
+  },
+  "SagaDLQ09832D30": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "MessageRetentionPeriod": 1209600,
+    "QueueName": "ed-drle-saga-dlq"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaDLQ/Resource"
+   }
+  },
+  "SlackAuditTopic39F67EA3": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "DisplayName": "Reconciler low confidence & discrepancy Slack Topic",
+    "TopicName": "ed-drle-slack-topic"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SlackAuditTopic/Resource"
+   }
+  },
+  "PaymentGatewaySecretA18D2FE2": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "Description": "API keys and auth configuration for the payment gateway client",
+    "GenerateSecretString": {},
+    "Name": "payment-gateway-credentials"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/PaymentGatewaySecret/Resource"
+   }
+  },
+  "HoldLambdaServiceRole5BC23CBD": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/HoldLambda/ServiceRole/Resource"
+   }
+  },
+  "HoldLambdaServiceRoleDefaultPolicy08D45FBE": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "IdempotencyTable22A5A209",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "IdempotencyTable22A5A209",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "InventoryCountersTable07CEB0D5",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "InventoryCountersTable07CEB0D5",
+          "Arn"
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "HoldLambdaServiceRoleDefaultPolicy08D45FBE",
+    "Roles": [
+     {
+      "Ref": "HoldLambdaServiceRole5BC23CBD"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/HoldLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "HoldLambdaA8657749": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      }
+     }
+    },
+    "Handler": "src/handlers/hold.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "HoldLambdaServiceRole5BC23CBD",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "HoldLambdaServiceRoleDefaultPolicy08D45FBE",
+    "HoldLambdaServiceRole5BC23CBD"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/HoldLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "StreamPublisherLambdaServiceRoleA2EC2D8A": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/StreamPublisherLambda/ServiceRole/Resource"
+   }
+  },
+  "StreamPublisherLambdaServiceRoleDefaultPolicyB6E2F94E": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "dynamodb:ListStreams",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "dynamodb:DescribeStream",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ActiveHoldsTableDAC9E8B7",
+         "StreamArn"
+        ]
+       }
+      },
+      {
+       "Action": "states:StartExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "SagaStateMachine1A568E4D"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "StreamPublisherLambdaServiceRoleDefaultPolicyB6E2F94E",
+    "Roles": [
+     {
+      "Ref": "StreamPublisherLambdaServiceRoleA2EC2D8A"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/StreamPublisherLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "StreamPublisherLambda67D3D6F9": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      },
+      "EVENT_BUS_NAME": {
+       "Ref": "EdDrleEventBus29D2C7F5"
+      }
+     }
+    },
+    "Handler": "src/handlers/stream-publisher.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "StreamPublisherLambdaServiceRoleA2EC2D8A",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "StreamPublisherLambdaServiceRoleDefaultPolicyB6E2F94E",
+    "StreamPublisherLambdaServiceRoleA2EC2D8A"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/StreamPublisherLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "StreamPublisherLambdaDynamoDBEventSourceEdDrleStackActiveHoldsTable7B9158AB2DA8C3FA": {
+   "Type": "AWS::Lambda::EventSourceMapping",
+   "Properties": {
+    "BatchSize": 5,
+    "EventSourceArn": {
+     "Fn::GetAtt": [
+      "ActiveHoldsTableDAC9E8B7",
+      "StreamArn"
+     ]
+    },
+    "FunctionName": {
+     "Ref": "StreamPublisherLambda67D3D6F9"
+    },
+    "MaximumRetryAttempts": 3,
+    "StartingPosition": "LATEST"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/StreamPublisherLambda/DynamoDBEventSource:EdDrleStackActiveHoldsTable7B9158AB/Resource"
+   }
+  },
+  "PaymentLambdaServiceRoleA2D46936": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/PaymentLambda/ServiceRole/Resource"
+   }
+  },
+  "PaymentLambdaServiceRoleDefaultPolicyFDF6FB95": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "PaymentGatewaySecretA18D2FE2"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "PaymentLambdaServiceRoleDefaultPolicyFDF6FB95",
+    "Roles": [
+     {
+      "Ref": "PaymentLambdaServiceRoleA2D46936"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/PaymentLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "PaymentLambda0A43C2C9": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      }
+     }
+    },
+    "Handler": "src/handlers/payment-mock.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "PaymentLambdaServiceRoleA2D46936",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "PaymentLambdaServiceRoleDefaultPolicyFDF6FB95",
+    "PaymentLambdaServiceRoleA2D46936"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/PaymentLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "LedgerWriterLambdaServiceRole0B49A3AF": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/LedgerWriterLambda/ServiceRole/Resource"
+   }
+  },
+  "LedgerWriterLambdaServiceRoleDefaultPolicyCD87A91C": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "LedgerWriterLambdaServiceRoleDefaultPolicyCD87A91C",
+    "Roles": [
+     {
+      "Ref": "LedgerWriterLambdaServiceRole0B49A3AF"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/LedgerWriterLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "LedgerWriterLambda939061EC": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      }
+     }
+    },
+    "Handler": "src/handlers/ledger-writer.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "LedgerWriterLambdaServiceRole0B49A3AF",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "LedgerWriterLambdaServiceRoleDefaultPolicyCD87A91C",
+    "LedgerWriterLambdaServiceRole0B49A3AF"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/LedgerWriterLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "CompensateLambdaServiceRole9A3D3673": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/CompensateLambda/ServiceRole/Resource"
+   }
+  },
+  "CompensateLambdaServiceRoleDefaultPolicyFF740F31": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "InventoryCountersTable07CEB0D5",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "InventoryCountersTable07CEB0D5",
+          "Arn"
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "CompensateLambdaServiceRoleDefaultPolicyFF740F31",
+    "Roles": [
+     {
+      "Ref": "CompensateLambdaServiceRole9A3D3673"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/CompensateLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "CompensateLambdaF1DCC855": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      }
+     }
+    },
+    "Handler": "src/handlers/compensate.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CompensateLambdaServiceRole9A3D3673",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "CompensateLambdaServiceRoleDefaultPolicyFF740F31",
+    "CompensateLambdaServiceRole9A3D3673"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/CompensateLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "ReconciliationLambdaServiceRole697F2EB7": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReconciliationLambda/ServiceRole/Resource"
+   }
+  },
+  "ReconciliationLambdaServiceRoleDefaultPolicyAD4034BD": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ActiveHoldsTableDAC9E8B7",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "ActiveHoldsTableDAC9E8B7",
+             "Arn"
+            ]
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "InventoryCountersTable07CEB0D5",
+          "Arn"
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "InventoryCountersTable07CEB0D5",
+          "Arn"
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ReconciliationLambdaServiceRoleDefaultPolicyAD4034BD",
+    "Roles": [
+     {
+      "Ref": "ReconciliationLambdaServiceRole697F2EB7"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReconciliationLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ReconciliationLambda48A3990B": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      }
+     }
+    },
+    "Handler": "src/handlers/reconciliation.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "ReconciliationLambdaServiceRole697F2EB7",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "ReconciliationLambdaServiceRoleDefaultPolicyAD4034BD",
+    "ReconciliationLambdaServiceRole697F2EB7"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReconciliationLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "AuditReconcilerLambdaServiceRole8357A340": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/AuditReconcilerLambda/ServiceRole/Resource"
+   }
+  },
+  "AuditReconcilerLambdaServiceRoleDefaultPolicy1673BC61": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sns:Publish",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "SlackAuditTopic39F67EA3"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AuditReconcilerLambdaServiceRoleDefaultPolicy1673BC61",
+    "Roles": [
+     {
+      "Ref": "AuditReconcilerLambdaServiceRole8357A340"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/AuditReconcilerLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "AuditReconcilerLambda7467B4C3": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      },
+      "AUDIT_STATE_MACHINE_ARN": {
+       "Ref": "AuditStateMachineE6329614"
+      }
+     }
+    },
+    "Handler": "src/handlers/audit-reconciler.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "AuditReconcilerLambdaServiceRole8357A340",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "AuditReconcilerLambdaServiceRoleDefaultPolicy1673BC61",
+    "AuditReconcilerLambdaServiceRole8357A340"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/AuditReconcilerLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "SettlementIngestionLambdaServiceRole51C82475": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementIngestionLambda/ServiceRole/Resource"
+   }
+  },
+  "SettlementIngestionLambdaServiceRoleDefaultPolicy3E916FD3": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "states:StartExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "AuditStateMachineE6329614"
+       }
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "SettlementBucketBE51E84A",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "SettlementBucketBE51E84A",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "SettlementIngestionLambdaServiceRoleDefaultPolicy3E916FD3",
+    "Roles": [
+     {
+      "Ref": "SettlementIngestionLambdaServiceRole51C82475"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementIngestionLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "SettlementIngestionLambda0006D24E": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_ENDPOINT_URL": "http://localhost:4566",
+      "DB_HOST": "host.docker.internal",
+      "DB_PORT": "5432",
+      "DB_USER": "postgres",
+      "DB_PASSWORD": "postgres",
+      "DB_NAME": "ledger_db",
+      "REDIS_HOST": "host.docker.internal",
+      "REDIS_PORT": "6379",
+      "SNS_TOPIC_ARN": {
+       "Ref": "SlackAuditTopic39F67EA3"
+      },
+      "AUDIT_STATE_MACHINE_ARN": {
+       "Ref": "AuditStateMachineE6329614"
+      }
+     }
+    },
+    "Handler": "src/handlers/settlement-ingestion.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "SettlementIngestionLambdaServiceRole51C82475",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "SettlementIngestionLambdaServiceRoleDefaultPolicy3E916FD3",
+    "SettlementIngestionLambdaServiceRole51C82475"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementIngestionLambda/Resource",
+    "aws:asset:path": "asset.5545173241e5fc85bb8d2b9b18d90723c695e8b66fab87df6cd6557f644ec817",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "SagaStateMachineRole15C0C256": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "states.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaStateMachine/Role/Resource"
+   }
+  },
+  "SagaStateMachineRoleDefaultPolicy94E02636": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "PaymentLambda0A43C2C9",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "PaymentLambda0A43C2C9",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "CompensateLambdaF1DCC855",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "CompensateLambdaF1DCC855",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "LedgerWriterLambda939061EC",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "LedgerWriterLambda939061EC",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "SagaStateMachineRoleDefaultPolicy94E02636",
+    "Roles": [
+     {
+      "Ref": "SagaStateMachineRole15C0C256"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaStateMachine/Role/DefaultPolicy/Resource"
+   }
+  },
+  "SagaStateMachine1A568E4D": {
+   "Type": "AWS::StepFunctions::StateMachine",
+   "Properties": {
+    "DefinitionString": {
+     "Fn::Join": [
+      "",
+      [
+       "{\"StartAt\":\"PaymentTask\",\"States\":{\"PaymentTask\":{\"Next\":\"PaymentSucceededChoice\",\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "PaymentLambda0A43C2C9",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}},\"PaymentSucceededChoice\":{\"Type\":\"Choice\",\"Choices\":[{\"Variable\":\"$.success\",\"BooleanEquals\":true,\"Next\":\"SettleLedgerTask\"}],\"Default\":\"CompensateTask\"},\"CompensateTask\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "CompensateLambdaF1DCC855",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}},\"SettleLedgerTask\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.Payload\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "LedgerWriterLambda939061EC",
+         "Arn"
+        ]
+       },
+       "\",\"Payload.$\":\"$\"}}},\"TimeoutSeconds\":600}"
+      ]
+     ]
+    },
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "SagaStateMachineRole15C0C256",
+      "Arn"
+     ]
+    },
+    "StateMachineName": "ReservationSagaWorkflow",
+    "StateMachineType": "STANDARD"
+   },
+   "DependsOn": [
+    "SagaStateMachineRoleDefaultPolicy94E02636",
+    "SagaStateMachineRole15C0C256"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaStateMachine/Resource"
+   }
+  },
+  "SagaStateMachineEventsRoleC9001B3E": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "events.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaStateMachine/EventsRole/Resource"
+   }
+  },
+  "SagaStateMachineEventsRoleDefaultPolicy0FB6A8B6": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "states:StartExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "SagaStateMachine1A568E4D"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "SagaStateMachineEventsRoleDefaultPolicy0FB6A8B6",
+    "Roles": [
+     {
+      "Ref": "SagaStateMachineEventsRoleC9001B3E"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaStateMachine/EventsRole/DefaultPolicy/Resource"
+   }
+  },
+  "AuditStateMachineRole5C7FD52C": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "states.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/AuditStateMachine/Role/Resource"
+   }
+  },
+  "AuditStateMachineRoleDefaultPolicyC23260F2": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "lambda:InvokeFunction",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "AuditReconcilerLambda7467B4C3",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "AuditReconcilerLambda7467B4C3",
+             "Arn"
+            ]
+           },
+           ":*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AuditStateMachineRoleDefaultPolicyC23260F2",
+    "Roles": [
+     {
+      "Ref": "AuditStateMachineRole5C7FD52C"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/AuditStateMachine/Role/DefaultPolicy/Resource"
+   }
+  },
+  "AuditStateMachineE6329614": {
+   "Type": "AWS::StepFunctions::StateMachine",
+   "Properties": {
+    "DefinitionString": {
+     "Fn::Join": [
+      "",
+      [
+       "{\"StartAt\":\"AuditReconcileTask\",\"States\":{\"AuditReconcileTask\":{\"End\":true,\"Retry\":[{\"ErrorEquals\":[\"Lambda.ClientExecutionTimeoutException\",\"Lambda.ServiceException\",\"Lambda.AWSLambdaException\",\"Lambda.SdkClientException\"],\"IntervalSeconds\":2,\"MaxAttempts\":6,\"BackoffRate\":2}],\"Type\":\"Task\",\"OutputPath\":\"$.status\",\"Resource\":\"arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":states:::lambda:invoke.waitForTaskToken\",\"Parameters\":{\"FunctionName\":\"",
+       {
+        "Fn::GetAtt": [
+         "AuditReconcilerLambda7467B4C3",
+         "Arn"
+        ]
+       },
+       "\",\"Payload\":{\"taskToken.$\":\"$$.Task.Token\",\"settlementRecord.$\":\"$.settlementRecord\"}}}},\"TimeoutSeconds\":86400}"
+      ]
+     ]
+    },
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "AuditStateMachineRole5C7FD52C",
+      "Arn"
+     ]
+    },
+    "StateMachineName": "AuditStateMachine",
+    "StateMachineType": "STANDARD"
+   },
+   "DependsOn": [
+    "AuditStateMachineRoleDefaultPolicyC23260F2",
+    "AuditStateMachineRole5C7FD52C"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/AuditStateMachine/Resource"
+   }
+  },
+  "EdDrleEventBus29D2C7F5": {
+   "Type": "AWS::Events::EventBus",
+   "Properties": {
+    "Name": "ed-drle-bus"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/EdDrleEventBus/Resource"
+   }
+  },
+  "SagaTriggerRuleBF485992": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "EventBusName": {
+     "Ref": "EdDrleEventBus29D2C7F5"
+    },
+    "EventPattern": {
+     "source": [
+      "ed.drle.reservation"
+     ],
+     "detail-type": [
+      "HoldCreated"
+     ]
+    },
+    "State": "ENABLED",
+    "Targets": [
+     {
+      "Arn": {
+       "Ref": "SagaStateMachine1A568E4D"
+      },
+      "Id": "Target0",
+      "RoleArn": {
+       "Fn::GetAtt": [
+        "SagaStateMachineEventsRoleC9001B3E",
+        "Arn"
+       ]
+      }
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaTriggerRule/Resource"
+   }
+  },
+  "ReconciliationScheduleAC121908": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "ScheduleExpression": "rate(5 minutes)",
+    "State": "ENABLED",
+    "Targets": [
+     {
+      "Arn": {
+       "Fn::GetAtt": [
+        "ReconciliationLambda48A3990B",
+        "Arn"
+       ]
+      },
+      "Id": "Target0",
+      "Input": "{\"EventID\":\"evt_concert_seat_1\",\"TotalCapacity\":100}"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReconciliationSchedule/Resource"
+   }
+  },
+  "ReconciliationScheduleAllowEventRuleEdDrleStackReconciliationLambda5B7B7EEECE422DC5": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "ReconciliationLambda48A3990B",
+      "Arn"
+     ]
+    },
+    "Principal": "events.amazonaws.com",
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "ReconciliationScheduleAC121908",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReconciliationSchedule/AllowEventRuleEdDrleStackReconciliationLambda5B7B7EEE"
+   }
+  },
+  "SettlementBucketBE51E84A": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": "ed-drle-settlements",
+    "Tags": [
+     {
+      "Key": "aws-cdk:auto-delete-objects",
+      "Value": "true"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementBucket/Resource"
+   }
+  },
+  "SettlementBucketPolicy9EA484EF": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "SettlementBucketBE51E84A"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:PutBucketPolicy",
+        "s3:GetBucket*",
+        "s3:List*",
+        "s3:DeleteObject*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::GetAtt": [
+          "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+          "Arn"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "SettlementBucketBE51E84A",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "SettlementBucketBE51E84A",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementBucket/Policy/Resource"
+   }
+  },
+  "SettlementBucketAutoDeleteObjectsCustomResource78566872": {
+   "Type": "Custom::S3AutoDeleteObjects",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "SettlementBucketBE51E84A"
+    }
+   },
+   "DependsOn": [
+    "SettlementBucketPolicy9EA484EF"
+   ],
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementBucket/AutoDeleteObjectsCustomResource/Default"
+   }
+  },
+  "SettlementBucketNotificationsHandlerPolicy0740C29A": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:PutBucketNotification",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "SettlementBucketBE51E84A",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "SettlementBucketNotificationsHandlerPolicy0740C29A",
+    "Roles": [
+     {
+      "Ref": "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementBucket/Notifications/HandlerPolicy/Resource"
+   }
+  },
+  "SettlementBucketNotifications262CC141": {
+   "Type": "Custom::S3BucketNotifications",
+   "Properties": {
+    "ServiceToken": {
+     "Fn::GetAtt": [
+      "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691",
+      "Arn"
+     ]
+    },
+    "BucketName": {
+     "Ref": "SettlementBucketBE51E84A"
+    },
+    "NotificationConfiguration": {
+     "LambdaFunctionConfigurations": [
+      {
+       "Events": [
+        "s3:ObjectCreated:Put"
+       ],
+       "LambdaFunctionArn": {
+        "Fn::GetAtt": [
+         "SettlementIngestionLambda0006D24E",
+         "Arn"
+        ]
+       }
+      }
+     ]
+    },
+    "Managed": true,
+    "SkipDestinationValidation": false
+   },
+   "DependsOn": [
+    "SettlementBucketAllowBucketNotificationsToEdDrleStackSettlementIngestionLambda45BEE9D8D1999C1A",
+    "SettlementBucketNotificationsHandlerPolicy0740C29A",
+    "SettlementBucketPolicy9EA484EF"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementBucket/Notifications/Resource"
+   }
+  },
+  "SettlementBucketAllowBucketNotificationsToEdDrleStackSettlementIngestionLambda45BEE9D8D1999C1A": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "SettlementIngestionLambda0006D24E",
+      "Arn"
+     ]
+    },
+    "Principal": "s3.amazonaws.com",
+    "SourceAccount": "000000000000",
+    "SourceArn": {
+     "Fn::GetAtt": [
+      "SettlementBucketBE51E84A",
+      "Arn"
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SettlementBucket/AllowBucketNotificationsToEdDrleStackSettlementIngestionLambda45BEE9D8"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Version": "2012-10-17",
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ]
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role"
+   }
+  },
+  "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-000000000000-us-east-1",
+     "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip"
+    },
+    "Timeout": 900,
+    "MemorySize": 128,
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs24.x",
+    "Description": {
+     "Fn::Join": [
+      "",
+      [
+       "Lambda function for auto-deleting objects in ",
+       {
+        "Ref": "SettlementBucketBE51E84A"
+       },
+       " S3 bucket."
+      ]
+     ]
+    }
+   },
+   "DependsOn": [
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler",
+    "aws:asset:path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+    "aws:asset:property": "Code"
+   }
+  },
+  "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Role/Resource"
+   }
+  },
+  "BucketNotificationsHandler050a0587b7544547bf325f094a3db8347ECC3691": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Description": "AWS CloudFormation handler for \"Custom::S3BucketNotifications\" resources (@aws-cdk/aws-s3)",
+    "Code": {
+     "ZipFile": "import boto3  # type: ignore\nimport json\nimport logging\nimport urllib.request\n\ns3 = boto3.client(\"s3\")\n\nEVENTBRIDGE_CONFIGURATION = 'EventBridgeConfiguration'\nCONFIGURATION_TYPES = [\"TopicConfigurations\", \"QueueConfigurations\", \"LambdaFunctionConfigurations\"]\n\ndef handler(event: dict, context):\n  response_status = \"SUCCESS\"\n  error_message = \"\"\n  try:\n    props = event[\"ResourceProperties\"]\n    notification_configuration = props[\"NotificationConfiguration\"]\n    managed = props.get('Managed', 'true').lower() == 'true'\n    skipDestinationValidation = props.get('SkipDestinationValidation', 'false').lower() == 'true'\n    stack_id = event['StackId']\n    old = event.get(\"OldResourceProperties\", {}).get(\"NotificationConfiguration\", {})\n    if managed:\n      config = handle_managed(event[\"RequestType\"], notification_configuration)\n    else:\n      config = handle_unmanaged(props[\"BucketName\"], stack_id, event[\"RequestType\"], notification_configuration, old)\n    s3.put_bucket_notification_configuration(Bucket=props[\"BucketName\"], NotificationConfiguration=config, SkipDestinationValidation=skipDestinationValidation)\n  except Exception as e:\n    logging.exception(\"Failed to put bucket notification configuration\")\n    response_status = \"FAILED\"\n    error_message = f\"Error: {str(e)}. \"\n  finally:\n    submit_response(event, context, response_status, error_message)\n\ndef handle_managed(request_type, notification_configuration):\n  if request_type == 'Delete':\n    return {}\n  return notification_configuration\n\ndef handle_unmanaged(bucket, stack_id, request_type, notification_configuration, old):\n  def get_id(n):\n    n['Id'] = ''\n    sorted_notifications = sort_filter_rules(n)\n    strToHash=json.dumps(sorted_notifications, sort_keys=True).replace('\"Name\": \"prefix\"', '\"Name\": \"Prefix\"').replace('\"Name\": \"suffix\"', '\"Name\": \"Suffix\"')\n    return f\"{stack_id}-{hash(strToHash)}\"\n  def with_id(n):\n    n['Id'] = get_id(n)\n    return n\n\n  external_notifications = {}\n  existing_notifications = s3.get_bucket_notification_configuration(Bucket=bucket)\n  for t in CONFIGURATION_TYPES:\n    if request_type == 'Update':\n        old_incoming_ids = [get_id(n) for n in old.get(t, [])]\n        external_notifications[t] = [n for n in existing_notifications.get(t, []) if not get_id(n) in old_incoming_ids]      \n    elif request_type == 'Delete':\n        external_notifications[t] = [n for n in existing_notifications.get(t, []) if not n['Id'].startswith(f\"{stack_id}-\")]\n    elif request_type == 'Create':\n        external_notifications[t] = [n for n in existing_notifications.get(t, [])]\n  if EVENTBRIDGE_CONFIGURATION in existing_notifications:\n    external_notifications[EVENTBRIDGE_CONFIGURATION] = existing_notifications[EVENTBRIDGE_CONFIGURATION]\n\n  if request_type == 'Delete':\n    return external_notifications\n\n  notifications = {}\n  for t in CONFIGURATION_TYPES:\n    external = external_notifications.get(t, [])\n    incoming = [with_id(n) for n in notification_configuration.get(t, [])]\n    notifications[t] = external + incoming\n\n  if EVENTBRIDGE_CONFIGURATION in notification_configuration:\n    notifications[EVENTBRIDGE_CONFIGURATION] = notification_configuration[EVENTBRIDGE_CONFIGURATION]\n  elif EVENTBRIDGE_CONFIGURATION in external_notifications:\n    notifications[EVENTBRIDGE_CONFIGURATION] = external_notifications[EVENTBRIDGE_CONFIGURATION]\n\n  return notifications\n\ndef submit_response(event: dict, context, response_status: str, error_message: str):\n  response_body = json.dumps(\n    {\n      \"Status\": response_status,\n      \"Reason\": f\"{error_message}See the details in CloudWatch Log Stream: {context.log_stream_name}\",\n      \"PhysicalResourceId\": event.get(\"PhysicalResourceId\") or event[\"LogicalResourceId\"],\n      \"StackId\": event[\"StackId\"],\n      \"RequestId\": event[\"RequestId\"],\n      \"LogicalResourceId\": event[\"LogicalResourceId\"],\n      \"NoEcho\": False,\n    }\n  ).encode(\"utf-8\")\n  headers = {\"content-type\": \"\", \"content-length\": str(len(response_body))}\n  try:\n    req = urllib.request.Request(url=event[\"ResponseURL\"], headers=headers, data=response_body, method=\"PUT\")\n    with urllib.request.urlopen(req) as response:\n      print(response.read().decode(\"utf-8\"))\n    print(\"Status code: \" + response.reason)\n  except Exception as e:\n      print(\"send(..) failed executing request.urlopen(..): \" + str(e))\n\ndef sort_filter_rules(json_obj):\n  if not isinstance(json_obj, dict):\n      return json_obj\n  for key, value in json_obj.items():\n      if isinstance(value, dict):\n          json_obj[key] = sort_filter_rules(value)\n      elif isinstance(value, list):\n          json_obj[key] = [sort_filter_rules(item) for item in value]\n  if \"Filter\" in json_obj and \"Key\" in json_obj[\"Filter\"] and \"FilterRules\" in json_obj[\"Filter\"][\"Key\"]:\n      filter_rules = json_obj[\"Filter\"][\"Key\"][\"FilterRules\"]\n      sorted_filter_rules = sorted(filter_rules, key=lambda x: x[\"Name\"])\n      json_obj[\"Filter\"][\"Key\"][\"FilterRules\"] = sorted_filter_rules\n  return json_obj"
+    },
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.13",
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "BucketNotificationsHandler050a0587b7544547bf325f094a3db834RoleB6FB88EC"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/BucketNotificationsHandler050a0587b7544547bf325f094a3db834/Resource"
+   }
+  },
+  "ReservationApiB66E1A28": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Description": "Gateway for managing reservation holds and audit reviews.",
+    "Name": "Reservation API Gateway"
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/Resource"
+   }
+  },
+  "ReservationApiCloudWatchRole6CF3F3FC": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "apigateway.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
+       ]
+      ]
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/CloudWatchRole/Resource"
+   }
+  },
+  "ReservationApiAccountE08AC5F1": {
+   "Type": "AWS::ApiGateway::Account",
+   "Properties": {
+    "CloudWatchRoleArn": {
+     "Fn::GetAtt": [
+      "ReservationApiCloudWatchRole6CF3F3FC",
+      "Arn"
+     ]
+    }
+   },
+   "DependsOn": [
+    "ReservationApiB66E1A28"
+   ],
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/Account"
+   }
+  },
+  "ReservationApiDeploymentBCEFD038d299b3a53d662ec3430b23ff77dc3fb5": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "Gateway for managing reservation holds and audit reviews.",
+    "RestApiId": {
+     "Ref": "ReservationApiB66E1A28"
+    }
+   },
+   "DependsOn": [
+    "ReservationApireservePOST869E1B84",
+    "ReservationApireserveC1978AF4"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/Deployment/Resource",
+    "aws:cdk:do-not-refactor": true
+   }
+  },
+  "ReservationApiDeploymentStageprod22EF6B2D": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "ReservationApiDeploymentBCEFD038d299b3a53d662ec3430b23ff77dc3fb5"
+    },
+    "RestApiId": {
+     "Ref": "ReservationApiB66E1A28"
+    },
+    "StageName": "prod"
+   },
+   "DependsOn": [
+    "ReservationApiAccountE08AC5F1"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/DeploymentStage.prod/Resource"
+   }
+  },
+  "ReservationApireserveC1978AF4": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ReservationApiB66E1A28",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "reserve",
+    "RestApiId": {
+     "Ref": "ReservationApiB66E1A28"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/Default/reserve/Resource"
+   }
+  },
+  "ReservationApireservePOSTApiPermissionEdDrleStackReservationApi372D51DDPOSTreserve782AD393": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "HoldLambdaA8657749",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:000000000000:",
+       {
+        "Ref": "ReservationApiB66E1A28"
+       },
+       "/",
+       {
+        "Ref": "ReservationApiDeploymentStageprod22EF6B2D"
+       },
+       "/POST/reserve"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/Default/reserve/POST/ApiPermission.EdDrleStackReservationApi372D51DD.POST..reserve"
+   }
+  },
+  "ReservationApireservePOSTApiPermissionTestEdDrleStackReservationApi372D51DDPOSTreserve6829CC33": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "HoldLambdaA8657749",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:us-east-1:000000000000:",
+       {
+        "Ref": "ReservationApiB66E1A28"
+       },
+       "/test-invoke-stage/POST/reserve"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/Default/reserve/POST/ApiPermission.Test.EdDrleStackReservationApi372D51DD.POST..reserve"
+   }
+  },
+  "ReservationApireservePOST869E1B84": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:us-east-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "HoldLambdaA8657749",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "ReservationApireserveC1978AF4"
+    },
+    "RestApiId": {
+     "Ref": "ReservationApiB66E1A28"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/ReservationApi/Default/reserve/POST/Resource"
+   }
+  },
+  "HoldLambdaErrorAlarmEDC2FCAB": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmDescription": "Fires if Hold Lambda experiences a execution error.",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "FunctionName",
+      "Value": {
+       "Ref": "HoldLambdaA8657749"
+      }
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "Errors",
+    "Namespace": "AWS/Lambda",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Threshold": 1
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/HoldLambdaErrorAlarm/Resource"
+   }
+  },
+  "SagaSFNFailedAlarmEDF57FAD": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmDescription": "Fires if a Saga Step Functions execution fails/aborts.",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "StateMachineArn",
+      "Value": {
+       "Ref": "SagaStateMachine1A568E4D"
+      }
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "ExecutionsFailed",
+    "Namespace": "AWS/States",
+    "Period": 300,
+    "Statistic": "Sum",
+    "Threshold": 1
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/SagaSFNFailedAlarm/Resource"
+   }
+  },
+  "DlqDepthAlarmD18F3374": {
+   "Type": "AWS::CloudWatch::Alarm",
+   "Properties": {
+    "AlarmDescription": "Fires if saga dead letter queue accumulates failed messages.",
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "Dimensions": [
+     {
+      "Name": "QueueName",
+      "Value": {
+       "Fn::GetAtt": [
+        "SagaDLQ09832D30",
+        "QueueName"
+       ]
+      }
+     }
+    ],
+    "EvaluationPeriods": 1,
+    "MetricName": "ApproximateNumberOfMessagesVisible",
+    "Namespace": "AWS/SQS",
+    "Period": 300,
+    "Statistic": "Maximum",
+    "Threshold": 1
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/DlqDepthAlarm/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/5WSTY/aMBCGf8tyNtMCUiv1BmwrVSpamuytqtDEGcCQ2GlmDEWW/3tlh11YaS89+ZkPvx694ylMP03g4wOeeazr47gxFYRSUB8VnnkT6ovF1tUVhGesGlLLrc0QFf9hCD89+ZzMEBVbhvDsOqNzZ4KomHRPwi1a3FEPocxxahgoqgbbqkYI37zVYpxNtVf+eiIrpfO9phV2nbG7VH4/u6a+NczG2agMthAKNwydz7VrjL7kvkxR8WyDzCQM83QonkFYeH0kWSCTGjBdGOhXGLXmr7GjL6N7w5JTPINcYhha517cIzUk9FQdSAuP4u+r3m2M+/g/tIcLpaBQSzZLR8VC3fbqGW8E+cjwI/v63Z7ckd42QFjundGkssoK9d7YbNR9HBUllxlCdnvh+dX5xIW/euvTf8DO7FDojBcIBbHMO5OLN5xr7bwV9Uhd4y5p8pS9i0rB3csQO1IFcd5vXsVLcNUceEWyd3VKDRSVbpyvzyh6D2HeYN/mhxPEeNPIy06P5G/jWVz7rv7b0rp3J1NTn+dZbu2Tl85LVNbVBAf+cJpOYfIZJg8HNmbceyumJSiG8x/jZsD7aQMAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "EdDrleStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ReservationApiEndpointBE712419": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ReservationApiB66E1A28"
+      },
+      ".execute-api.us-east-1.",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ReservationApiDeploymentStageprod22EF6B2D"
+      },
+      "/"
+     ]
+    ]
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

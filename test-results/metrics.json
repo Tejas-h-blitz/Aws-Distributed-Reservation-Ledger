@@ -1,0 +1,9 @@
+{
+  "p50": 110,
+  "p95": 159,
+  "p99": 159,
+  "max": 159,
+  "throughput": 415.28239202657807,
+  "totalRequests": 500,
+  "successRate": 100
+}
