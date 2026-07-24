@@ -1,1 +1,16 @@
-node_modules
+# Dependency directories
+node_modules/
+
+# Build and compilation outputs
+dist/
+cdk.out/
+temp-cdk.out/
+
+# Test reports and performance logs
+test-results/
+.system_generated/
+*.log
+
+# Environment configs
+.env
+.env.*
