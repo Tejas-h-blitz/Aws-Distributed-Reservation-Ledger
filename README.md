@@ -5,7 +5,7 @@ ED-DRLE is a high-concurrency, fault-tolerant inventory reservation and transact
 *This project features a **Zero-Cloud-Cost Local Integration Simulator** that mimics AWS API Gateway, EventBridge, DynamoDB Streams, and Standard Step Functions locally—enabling comprehensive integration and chaos testing.*
 
 ---
-
+ 
 ## 1. System Architecture
 
 ```mermaid
