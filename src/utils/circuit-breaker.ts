@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 export enum CircuitState {
   CLOSED = "CLOSED",
   OPEN = "OPEN",
@@ -31,11 +33,13 @@ export class CircuitBreaker {
   }
 
   private transitionTo(newState: CircuitState) {
+    const oldState = this.state;
     this.state = newState;
     this.lastStateChange = Date.now();
     if (newState === CircuitState.CLOSED) {
       this.requestHistory = [];
     }
+    logger.warn(`Circuit breaker transitioned state`, { oldState, newState });
   }
 
   public async execute<T>(fn: () => Promise<T>): Promise<T> {
