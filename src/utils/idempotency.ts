@@ -11,6 +11,37 @@ export interface IdempotencyStore {
 
 export class MemoryIdempotencyStore implements IdempotencyStore {
   private cache = new Map<string, IdempotencyRecord>();
+  private cleanupInterval?: NodeJS.Timeout;
+
+  constructor(cleanupIntervalMs?: number) {
+    if (cleanupIntervalMs) {
+      this.cleanupInterval = setInterval(() => this.cleanupExpired(), cleanupIntervalMs);
+      if (this.cleanupInterval.unref) {
+        this.cleanupInterval.unref();
+      }
+    }
+  }
+
+  public stopCleanup() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
+  }
+
+  public cleanupExpired(): void {
+    const now = Date.now() / 1000;
+    for (const [key, record] of this.cache.entries()) {
+      if (now > record.expirationTime) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  // Get size of cache (helpful for unit testing)
+  public getCacheSize(): number {
+    return this.cache.size;
+  }
 
   async getRecord(key: string): Promise<IdempotencyRecord | null> {
     const record = this.cache.get(key);
