@@ -1,5 +1,19 @@
 # Decisions
 
+## Phase 5: centralized network resilience
+
+- **Problem:** Downstream calls had inconsistent timeout/retry behavior and no
+  shared backpressure boundary.
+- **Options:** Central policy, per-repository retries, or SDK defaults.
+- **Choice:** Add a shared `executeNetworkPolicy` with per-call timeout,
+  exponential/capped full jitter, bounded attempts, and optional concurrency
+  load shedding. Wire it into the payment mock and configure the PostgreSQL
+  pool (`max`, idle timeout, connection timeout).
+- **Trade-off:** The policy bounds one process's concurrency but is not a
+  distributed semaphore. Redis keep-alive and command deadlines remain to be
+  verified against a real Redis process. AWS SDK retry layers may compose with
+  this policy; timeout/retry budgets must be coordinated before cloud testing.
+
 ## Phase 3: seeded fault-injection harness
 
 - **Problem:** Correctness claims need post-event invariant checks across

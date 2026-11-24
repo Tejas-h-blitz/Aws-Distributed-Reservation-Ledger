@@ -1,5 +1,15 @@
 # Failures and Reproduction Status
 
+## Phase 5 network resilience
+
+The first policy test failed because `executeNetworkPolicy` was a TODO, then
+passed after timeout, retry/jitter, and bounded attempt implementation.
+The retry-storm comparison passed: 40 unprotected requests made 120 calls;
+the protected run allowed 4 concurrent calls and shed 36.
+
+PostgreSQL pooling is process-local `pg.Pool`; RDS/RDS Proxy remains
+out of scope. Redis keep-alive and AWS SDK retries are not live-tested.
+
 ## Phase 3 fault-injection harness
 
 The seeded harness (`424242`) passed crash, duplicate/delayed/reordered events,

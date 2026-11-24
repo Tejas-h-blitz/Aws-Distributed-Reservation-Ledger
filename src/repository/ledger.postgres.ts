@@ -1,5 +1,6 @@
 import { Pool } from "pg";
 import { LedgerRepository, Transaction } from "./ledger.interface";
+import { executeNetworkPolicy } from "../utils/network-resilience";
 
 export class PostgresLedgerRepository implements LedgerRepository {
   private pool: Pool;
@@ -17,6 +18,9 @@ export class PostgresLedgerRepository implements LedgerRepository {
       user: config?.user || process.env.DB_USER || "postgres",
       password: config?.password || process.env.DB_PASSWORD || "postgres",
       database: config?.database || process.env.DB_NAME || "ledger_db",
+      max: Number(process.env.DB_POOL_MAX) || 10,
+      idleTimeoutMillis: Number(process.env.DB_IDLE_TIMEOUT_MS) || 30000,
+      connectionTimeoutMillis: Number(process.env.DB_CONNECTION_TIMEOUT_MS) || 5000,
     });
   }
 
