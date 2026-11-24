@@ -7,6 +7,7 @@ import { pendingHumanReviews } from "../handlers/audit-reconciler";
 import { traceStorage, logger } from "../utils/logger";
 import { v4 as uuidv4 } from "uuid";
 import { observability } from "../utils/observability";
+import { context, propagation } from "@opentelemetry/api";
 
 const app = express();
 app.use(express.json());
@@ -14,8 +15,14 @@ app.use(express.json());
 // Express middleware to bind every incoming API request to a unique trace context (Correlation ID)
 app.use((req, res, next) => {
   const traceId = (req.headers["x-trace-id"] || req.headers["x-amzn-trace-id"] || uuidv4()) as string;
-  traceStorage.run(traceId, () => {
-    next();
+  const carrier: Record<string, string> = {};
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (typeof value === "string") carrier[key] = value;
+    else if (Array.isArray(value)) carrier[key] = value.join(",");
+  }
+  const parentContext = propagation.extract(context.active(), carrier);
+  context.with(parentContext, () => {
+    traceStorage.run(traceId, next);
   });
 });
 
@@ -40,7 +47,7 @@ app.post("/reserve", async (req, res) => {
     route: "/reserve",
   });
   const startedAt = Date.now();
-  const response = await holdHandler(event);
+  const response = await observability.withSpan(span, () => holdHandler(event));
   const durationMs = Date.now() - startedAt;
   const isError = response.statusCode >= 500;
   observability.recordRequest(durationMs, isError, "reserve");
@@ -77,19 +84,21 @@ app.post("/reserve", async (req, res) => {
           Amount: 125.50, // standard seat amount
           Currency: "USD",
           UsedFallbackStore: holdData.UsedFallbackStore || false,
-        });
-
-        app.get("/observability", (_req, res) => {
-          res.status(200).json({
-            red: observability.snapshot("reserve"),
-            spans: observability.spans(),
-          });
+          ParentSpan: span,
         });
 
         logger.info(`[StepFunctions] Saga execution finished`, { ReservationID: holdData.ReservationID, status: sagaResult.status, history: sagaResult.history });
       });
     });
   }
+});
+
+app.get("/observability", async (_req, res) => {
+  await observability.forceFlush();
+  res.status(200).json({
+    red: observability.snapshot("reserve"),
+    spans: observability.spans(),
+  });
 });
 
 /**

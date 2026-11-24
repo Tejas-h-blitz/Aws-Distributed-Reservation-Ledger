@@ -4,7 +4,7 @@ import { handler as compensateHandler } from "../handlers/compensate";
 import { handler as auditReconcilerHandler, pendingHumanReviews } from "../handlers/audit-reconciler";
 import { getRegistry } from "../registry";
 import { logger } from "../utils/logger";
-import { observability } from "../utils/observability";
+import { observability, TraceSpan } from "../utils/observability";
 import { traceStorage } from "../utils/logger";
  
 export class StepFunctionsSimulator {
@@ -21,12 +21,16 @@ export class StepFunctionsSimulator {
     Amount: number;
     Currency: string;
     UsedFallbackStore: boolean;
+    ParentSpan?: TraceSpan;
   }): Promise<{ status: "SUCCESS" | "FAILED"; history: string[] }> {
     const history: string[] = ["State: SagaStarted"];
     const traceId = traceStorage.getStore() || "no-trace-context";
-    const span = observability.startSpan("saga", traceId, {
-      reservationId: input.ReservationID,
-    });
+    const span = observability.startSpan(
+      "saga",
+      traceId,
+      { reservationId: input.ReservationID },
+      input.ParentSpan
+    );
  
     // 1. Invoke Payment Processor
     history.push("State: InvokePaymentGateway");
@@ -37,10 +41,17 @@ export class StepFunctionsSimulator {
  
     while (paymentAttempts < maxAttempts) {
       paymentAttempts++;
-      paymentResult = await paymentHandler({
-        ReservationID: input.ReservationID,
-        Amount: input.Amount,
-      });
+      paymentResult = await observability.runSpan(
+        "saga.payment",
+        traceId,
+        { attempt: paymentAttempts },
+        span,
+        () => paymentHandler({
+          ReservationID: input.ReservationID,
+          Amount: input.Amount,
+        }),
+        result => !result.success
+      );
  
       if (paymentResult.success) {
         history.push(`PaymentSucceeded (Attempt ${paymentAttempts})`);
@@ -58,13 +69,20 @@ export class StepFunctionsSimulator {
     if (paymentResult.success) {
       // Success branch: Settle Ledger
       history.push("State: InvokeLedgerWriter");
-      const ledgerResult = await ledgerWriterHandler({
-        ReservationID: input.ReservationID,
-        UserID: input.UserID,
-        Amount: input.Amount,
-        Currency: input.Currency,
-        TransactionID: paymentResult.transactionId,
-      });
+      const ledgerResult = await observability.runSpan(
+        "saga.ledger",
+        traceId,
+        { reservationId: input.ReservationID },
+        span,
+        () => ledgerWriterHandler({
+          ReservationID: input.ReservationID,
+          UserID: input.UserID,
+          Amount: input.Amount,
+          Currency: input.Currency,
+          TransactionID: paymentResult.transactionId,
+        }),
+        result => !result.success
+      );
  
       if (ledgerResult.success) {
         history.push("State: SagaCompleted");
@@ -77,11 +95,18 @@ export class StepFunctionsSimulator {
  
     // Failure branch: Compensation (Revert reservation)
     history.push("State: InvokeCompensation");
-    await compensateHandler({
-      ReservationID: input.ReservationID,
-      EventID: input.EventID,
-      UsedFallbackStore: input.UsedFallbackStore,
-    });
+    await observability.runSpan(
+      "saga.compensation",
+      traceId,
+      { reservationId: input.ReservationID },
+      span,
+      () => compensateHandler({
+        ReservationID: input.ReservationID,
+        EventID: input.EventID,
+        UsedFallbackStore: input.UsedFallbackStore,
+      }),
+      result => !result.success
+    );
     history.push("State: SagaCompensated");
     observability.finishSpan(span, "ERROR", { status: "FAILED" });
     return { status: "FAILED", history };

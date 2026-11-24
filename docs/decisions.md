@@ -3,15 +3,19 @@
 ## Phase 6: local RED metrics and trace spans
 
 - **Problem:** Structured logs existed, but there was no local RED snapshot or
-  saga span object proving an injected failure end-to-end.
-- **Options:** Add OpenTelemetry SDK/exporters, use only existing CloudWatch
-  infrastructure, or add a small dependency-free local implementation.
-- **Choice:** Add a local RED snapshot and trace-span collector, exposed from
-  the Express emulator at `GET /observability`. Existing correlation IDs remain
-  the trace key. Do not add a new dependency without explicit approval.
-- **Trade-off:** This proves local instrumentation and injected failure
-  correlation, but it does not fulfill OpenTelemetry export, a live dashboard,
-  or AWS alarm delivery. Those remain explicitly incomplete.
+  trace that linked an injected failure across the reserve and saga paths.
+- **Options:** Keep only the dependency-free local collector, add approved
+  OpenTelemetry SDK/API packages with a diagnostic local exporter, or add a
+  remote collector and cloud resources.
+- **Choice:** After explicit approval, add manual OpenTelemetry spans and RED
+  instruments with async context propagation. Keep the existing correlation ID
+  as a span attribute, extract W3C `traceparent`, and create spans for reserve,
+  saga, payment attempts, ledger, and compensation. Enable console exporters
+  only with `OTEL_CONSOLE_EXPORTER=true`; retain bounded local snapshots at
+  `GET /observability`.
+- **Trade-off:** Automated tests prove local parent/child IDs and console
+  export, but do not prove a remote collector, AWS export, live dashboard, alert
+  delivery, or multi-instance propagation. Console output is diagnostic only.
 
 ## Phase 5: centralized network resilience
 

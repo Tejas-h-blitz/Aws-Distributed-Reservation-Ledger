@@ -39,11 +39,15 @@ export async function runSagaTest(baseUrl: string): Promise<boolean> {
 
   // 2. Wait for background Step Functions to execute payment and trigger compensation
   console.log("Waiting for background Saga execution and compensation tasks to complete...");
-  await new Promise(resolve => setTimeout(resolve, 300));
+  const registry = getRegistry();
+  const deadline = Date.now() + 5000;
+  let holdRecord = await registry.holds.getHold(holdId);
+  while (holdRecord?.Status === "PENDING" && Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, 50));
+    holdRecord = await registry.holds.getHold(holdId);
+  }
 
   // 3. Verify final state
-  const registry = getRegistry();
-  const holdRecord = await registry.holds.getHold(holdId);
   const finalStatus = holdRecord ? holdRecord.Status : "RECORD_MISSING";
   console.log(`  - Final hold record status in DynamoDB: ${finalStatus}`);
 

@@ -5,7 +5,9 @@
   "main": "src/local/local-server.ts",
   "scripts": {
     "build": "tsc",
-    "test": "ts-node tests/run-tests.ts"
+    "test": "ts-node tests/run-tests.ts",
+    "test:otel": "ts-node tests/phase6/otel-export.test.ts",
+    "test:phase6": "ts-node tests/phase6/observability.test.ts && ts-node tests/phase6/debug-injected-failure.test.ts && ts-node tests/phase6/otel-export.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.600.0",
@@ -15,6 +17,10 @@
     "@aws-sdk/client-sfn": "^3.600.0",
     "@aws-sdk/client-sns": "^3.600.0",
     "@aws-sdk/lib-dynamodb": "^3.600.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/context-async-hooks": "^2.2.0",
+    "@opentelemetry/sdk-metrics": "^2.2.0",
+    "@opentelemetry/sdk-trace-node": "^2.2.0",
     "express": "^4.19.2",
     "ioredis": "^5.4.1",
     "pg": "^8.12.0",

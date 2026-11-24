@@ -2,14 +2,28 @@
 
 ## Phase 6 observability
 
-The RED/span unit test passed. The injected-payment-failure test passed:
-`GET /observability` reported one successful reserve request and an
-`ERROR` saga span carrying the injected trace ID. This is a local debug path,
-not a distributed trace-export verification.
+The local RED/span unit test, W3C parent-propagation plus injected-payment
+failure test, and console exporter test passed. The exporter test captured the
+reserve and saga spans and verified their trace ID and parent span ID, as well
+as the exported request counter. `npm run build`, `npm run test:phase6`, and
+the complete local test suite passed.
 
-OpenTelemetry, custom CloudWatch RED metrics, and live dashboard/alert delivery
-remain incomplete. The current spans are process-local objects. No telemetry
-dependency was installed without explicit approval.
+The first full-suite attempt exposed a stale fixed 300 ms wait in the saga
+compensation test. The payment mock has nested retries, so the test read the
+hold before the background workflow completed. Replaced the fixed sleep with
+bounded polling for a terminal hold state; the rerun observed `CANCELLED` and
+restored stock.
+
+These are local-process tests. The console exporter is not remote telemetry.
+Custom CloudWatch RED export, AWS tracing, live dashboard/alert delivery, and
+multi-instance trace propagation remain unverified.
+
+`npm audit --omit=dev` reported four production dependency advisories: one
+critical (`proxy-addr`), one high (`body-parser`), and two moderate (`qs` and
+`uuid`). They are in the existing application dependency tree, not the added
+OpenTelemetry packages. No automatic updates were applied; the suggested
+`uuid` remediation is a breaking major-version change and the other dependency
+updates should be handled in a separate, tested maintenance change.
 
 ## Phase 5 network resilience
 
