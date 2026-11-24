@@ -1,5 +1,18 @@
 # Decisions
 
+## Phase 6: local RED metrics and trace spans
+
+- **Problem:** Structured logs existed, but there was no local RED snapshot or
+  saga span object proving an injected failure end-to-end.
+- **Options:** Add an external OTLP stack, use only CloudWatch, or add a small
+  local observability implementation with an exporter boundary.
+- **Choice:** Add a local RED snapshot and trace-span collector, exposed from
+  the Express emulator at `GET /observability`. Existing correlation IDs remain
+  the trace key. CloudWatch definitions remain the AWS deployment boundary.
+- **Trade-off:** This proves local instrumentation and injected failure
+  correlation, but not an OTLP collector, real tracing exporter, or AWS alarm
+  delivery.
+
 ## Phase 5: centralized network resilience
 
 - **Problem:** Downstream calls had inconsistent timeout/retry behavior and no

@@ -6,6 +6,7 @@ import { MemoryInventoryRepository } from "../repository/inventory.memory";
 import { pendingHumanReviews } from "../handlers/audit-reconciler";
 import { traceStorage, logger } from "../utils/logger";
 import { v4 as uuidv4 } from "uuid";
+import { observability } from "../utils/observability";
 
 const app = express();
 app.use(express.json());
@@ -33,7 +34,21 @@ app.post("/reserve", async (req, res) => {
     body: JSON.stringify(req.body),
   };
 
+  const traceId = (req.headers["x-trace-id"] || req.headers["x-amzn-trace-id"] || uuidv4()) as string;
+  const span = observability.startSpan("reserve", traceId, {
+    method: "POST",
+    route: "/reserve",
+  });
+  const startedAt = Date.now();
   const response = await holdHandler(event);
+  const durationMs = Date.now() - startedAt;
+  const isError = response.statusCode >= 500;
+  observability.recordRequest(durationMs, isError, "reserve");
+  observability.finishSpan(
+    span,
+    isError ? "ERROR" : "OK",
+    { statusCode: response.statusCode }
+  );
 
   // Set headers
   if (response.headers) {
@@ -62,6 +77,13 @@ app.post("/reserve", async (req, res) => {
           Amount: 125.50, // standard seat amount
           Currency: "USD",
           UsedFallbackStore: holdData.UsedFallbackStore || false,
+        });
+
+        app.get("/observability", (_req, res) => {
+          res.status(200).json({
+            red: observability.snapshot("reserve"),
+            spans: observability.spans(),
+          });
         });
 
         logger.info(`[StepFunctions] Saga execution finished`, { ReservationID: holdData.ReservationID, status: sagaResult.status, history: sagaResult.history });

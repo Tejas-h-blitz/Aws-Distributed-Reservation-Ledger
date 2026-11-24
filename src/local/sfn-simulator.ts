@@ -4,6 +4,8 @@ import { handler as compensateHandler } from "../handlers/compensate";
 import { handler as auditReconcilerHandler, pendingHumanReviews } from "../handlers/audit-reconciler";
 import { getRegistry } from "../registry";
 import { logger } from "../utils/logger";
+import { observability } from "../utils/observability";
+import { traceStorage } from "../utils/logger";
  
 export class StepFunctionsSimulator {
   /**
@@ -21,6 +23,10 @@ export class StepFunctionsSimulator {
     UsedFallbackStore: boolean;
   }): Promise<{ status: "SUCCESS" | "FAILED"; history: string[] }> {
     const history: string[] = ["State: SagaStarted"];
+    const traceId = traceStorage.getStore() || "no-trace-context";
+    const span = observability.startSpan("saga", traceId, {
+      reservationId: input.ReservationID,
+    });
  
     // 1. Invoke Payment Processor
     history.push("State: InvokePaymentGateway");
@@ -62,6 +68,7 @@ export class StepFunctionsSimulator {
  
       if (ledgerResult.success) {
         history.push("State: SagaCompleted");
+        observability.finishSpan(span, "OK", { status: "SUCCESS" });
         return { status: "SUCCESS", history };
       } else {
         history.push(`LedgerWriterFailed: ${ledgerResult.error}`);
@@ -76,6 +83,7 @@ export class StepFunctionsSimulator {
       UsedFallbackStore: input.UsedFallbackStore,
     });
     history.push("State: SagaCompensated");
+    observability.finishSpan(span, "ERROR", { status: "FAILED" });
     return { status: "FAILED", history };
   }
  
