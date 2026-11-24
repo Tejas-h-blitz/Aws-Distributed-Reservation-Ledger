@@ -140,9 +140,9 @@ commit is `8a06cbe3907434eaf1228a08ed74112c0a0fb742`; the run is dated
 `2026-11-24T10:56:43.480Z` UTC. This is a local simulator measurement, not an
 AWS result. The repository does not contain the stated 10,000 RPS target.
 
-For orientation only, dividing the README's unverified `229.67` figure into
-10,000 gives about `43.5x`. This is arithmetic on an unverified claim, not a
-measured capacity ratio. It is not safe to extrapolate from the in-memory,
+By arithmetic, the 10,000 RPS target is about `27.94x` the recorded
+`357.91 RPS` local baseline. This is a target-to-local-test comparison, not a
+measured AWS capacity gap; it is not safe to extrapolate from the in-memory,
 500-request test to a cloud system.
 
 At 10,000 *unique successful* reservations per second, the code path implies at
