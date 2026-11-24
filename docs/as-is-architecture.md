@@ -1,7 +1,7 @@
 # ED-DRLE v1 As-Is Architecture
 
-Audit date: 2026-11-24  
-Audited commit: `1b2ba0305b0a63e63e0dc4fab40e4628f1af77ec`  
+Audit date: 2026-11-24
+Audited commit: `1b2ba0305b0a63e63e0dc4fab40e4628f1af77ec`
 Repository state: `main`, clean at audit start; no `v1.0` tag exists.
 
 This document describes what is present in the repository, not a claim that the
