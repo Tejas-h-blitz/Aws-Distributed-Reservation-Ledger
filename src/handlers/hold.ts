@@ -163,7 +163,7 @@ export async function handler(event: any): Promise<any> {
           body: JSON.stringify({ error: "Failed to write reservation hold record." }),
         };
       }
-    });
+    }, event.body);
 
     // If result is already formatted as APIGW Proxy result
     if (result && typeof result === "object" && "statusCode" in result) {

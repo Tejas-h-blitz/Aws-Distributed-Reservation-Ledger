@@ -76,6 +76,25 @@ class DynamoDBIdempotencyStore implements IdempotencyStore {
       console.error("Failed to save idempotency record to DynamoDB", e);
     }
   }
+
+  async acquirePending(
+    key: string,
+    requestHash: string,
+    expirationTime: number
+  ): Promise<import("./utils/idempotency").IdempotencyAcquireResult> {
+    // TODO(me): Use DynamoDB conditional Put for create/claim semantics.
+    throw new Error("TODO(me): implement DynamoDBIdempotencyStore.acquirePending");
+  }
+
+  async completePending(
+    key: string,
+    requestHash: string,
+    response: any,
+    expirationTime: number
+  ): Promise<"COMPLETED" | "STALE" | "MISMATCH"> {
+    // TODO(me): Use conditional Update on requestHash and PENDING status.
+    throw new Error("TODO(me): implement DynamoDBIdempotencyStore.completePending");
+  }
 }
 
 export function getRegistry(): ServiceRegistry {

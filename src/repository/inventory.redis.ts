@@ -62,7 +62,8 @@ export class RedisInventoryRepository implements InventoryRepository {
 
   async setStock(eventId: string, count: number): Promise<void> {
     const key = `inventory:${eventId}`;
-    await this.redis.set(key, count);
+    const ttlSeconds = Number(process.env.REDIS_INVENTORY_TTL_SECONDS) || 86400;
+    await this.redis.set(key, count, "EX", ttlSeconds);
   }
 
   async close() {

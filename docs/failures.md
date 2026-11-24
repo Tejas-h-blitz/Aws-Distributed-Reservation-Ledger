@@ -1,5 +1,21 @@
 # Failures and Reproduction Status
 
+## Phase 2 correctness work
+
+- Duplicate compensation reproduction: passed after compensation became a
+  state transition no-op on replay.
+- Expired-hold reconciliation reproduction: passed after reconciliation
+  transitions expired PENDING holds and excludes them from active stock.
+- Redis key-retention reproduction: passed after `SET ... EX` was added.
+- Idempotency acquire/complete scaffold: passed in memory.
+- Existing local integration suite: all 8 pipelines passed; load metrics were
+  259.47 RPS, p50 180 ms, p95 261 ms, p99 261 ms.
+
+Not solved: DynamoDB idempotency is still a TODO placeholder, and its
+conditional acquire/complete operations are not implemented. Redis TTL is a
+best-effort bounded-key policy, not a reconciliation consistency guarantee.
+Connection pooling has not changed; `pg.Pool` exists and RDS/RDS Proxy do not.
+
 ## Phase 1 lifecycle modeling
 
 No production behavior was fixed in Phase 1. The service and tests only model

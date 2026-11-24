@@ -1,5 +1,6 @@
 import { getRegistry } from "../registry";
 import { logger } from "../utils/logger";
+import { HoldStateMachine } from "../repository/hold-state-machine";
  
 /**
  * AWS Lambda handler to execute compensating transaction on payment failures.
@@ -19,12 +20,28 @@ export async function handler(event: any): Promise<any> {
  
   try {
     logger.info("Executing saga compensation: cancelling hold record", { ReservationID, EventID });
-    // 1. Mark hold status as CANCELLED in DynamoDB
-    const hold = await registry.holds.getHold(ReservationID);
-    if (hold) {
-      await registry.holds.updateHoldStatus(ReservationID, "CANCELLED", hold.Version);
-    } else {
+    const stateMachine = new HoldStateMachine(registry.holds);
+    let compensationApplied = false;
+    try {
+      compensationApplied = await stateMachine.transition(ReservationID, "CANCELLED");
+    } catch (error: any) {
+      if (error.name !== "InvalidHoldTransitionError") throw error;
+      logger.info("Hold is already cancelled or cannot be cancelled", {
+        ReservationID,
+        EventID,
+      });
+    }
+
+    if (!compensationApplied) {
+      const hold = await registry.holds.getHold(ReservationID);
+      if (!hold) {
       logger.warn(`ActiveHold record with ID ${ReservationID} not found. Proceeding with counter return.`, { ReservationID });
+      }
+      return {
+        success: true,
+        message: `Compensating transaction is already complete for reservation ${ReservationID}.`,
+        compensationApplied: false,
+      };
     }
  
     // 2. Increment stock counter back on appropriate store

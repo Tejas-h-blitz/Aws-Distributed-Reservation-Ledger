@@ -1,5 +1,21 @@
 # Decisions
 
+## Phase 2: idempotency and bounded correctness fixes
+
+- **Problem:** Replayed compensation and expired holds could not be made safe
+  because idempotency claims were not atomic and state transitions were direct.
+- **Options:** Add a response-only cache, add Redis locks, or make PENDING/
+  COMPLETED records with conditional ownership and payload binding.
+- **Choice:** Implement PENDING/COMPLETED ownership and payload hashes in the
+  idempotency interface and memory store. Compensation now uses the lifecycle
+  state machine so a replay becomes a no-op. Reconciliation expires PENDING
+  holds before counting active stock. Redis inventory `SET` now accepts an
+  environment-configured TTL, defaulting to 24 hours.
+- **Trade-off:** The DynamoDB idempotency implementation remains TODO. The
+  TTL value protects the Redis key-retention problem but may expire inventory
+  state independently of event lifecycle, so Phase 2 does not claim DynamoDB/
+  Redis consistency. RDS remains unchanged.
+
 ## Phase 1: reservation lifecycle state machine
 
 - **Problem:** The hold record has an enum and handlers call status updates

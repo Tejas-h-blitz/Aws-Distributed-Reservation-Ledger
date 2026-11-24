@@ -1,4 +1,5 @@
 import { getRegistry } from "../registry";
+import { HoldStateMachine } from "../repository/hold-state-machine";
 
 /**
  * Reconciles stock drift for a specific event.
@@ -10,7 +11,18 @@ export async function reconcileEvent(eventId: string, totalCapacity: number): Pr
 
   // 1. Get confirmed holds from DynamoDB
   const holds = await registry.holds.getHoldsByEventId(eventId);
-  const activeHolds = holds.filter(h => h.Status === "PENDING" || h.Status === "SETTLED");
+  const now = Math.floor(Date.now() / 1000);
+  const stateMachine = new HoldStateMachine(registry.holds);
+  for (const hold of holds) {
+    if (hold.Status === "PENDING" && hold.ExpirationTimestamp <= now) {
+      await stateMachine.transition(hold.HoldID, "EXPIRED");
+    }
+  }
+
+  const activeHolds = holds.filter(h =>
+    h.Status === "SETTLED" ||
+    (h.Status === "PENDING" && h.ExpirationTimestamp > now)
+  );
   const activeHoldsCount = activeHolds.length;
 
   // 2. Compute expected stock level
