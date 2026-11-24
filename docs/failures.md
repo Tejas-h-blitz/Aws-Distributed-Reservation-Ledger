@@ -7,6 +7,10 @@ The RED/span unit test passed. The injected-payment-failure test passed:
 `ERROR` saga span carrying the injected trace ID. This is a local debug path,
 not a distributed trace-export verification.
 
+OpenTelemetry, custom CloudWatch RED metrics, and live dashboard/alert delivery
+remain incomplete. The current spans are process-local objects. No telemetry
+dependency was installed without explicit approval.
+
 ## Phase 5 network resilience
 
 The first policy test failed because `executeNetworkPolicy` was a TODO, then

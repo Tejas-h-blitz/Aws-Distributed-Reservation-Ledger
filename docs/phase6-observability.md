@@ -24,6 +24,13 @@ The CDK stack already has CloudWatch dashboard and alarm definitions for hold
 Lambda errors, failed sagas, and DLQ depth. Phase 6 has not added custom RED
 metrics or a live dashboard/alert delivery test.
 
+## OpenTelemetry status
+
+The in-process spans are not OpenTelemetry spans and are not exported. No
+OpenTelemetry dependency was added because it requires explicit approval under
+the project constraints. Add the SDK/API and an exporter only after that
+approval; do not describe the current collector as distributed tracing.
+
 ## Debug workflow
 
 1. Reproduce a forced saga failure using a hold ID containing `fail`.

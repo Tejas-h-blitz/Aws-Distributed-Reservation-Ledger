@@ -4,14 +4,14 @@
 
 - **Problem:** Structured logs existed, but there was no local RED snapshot or
   saga span object proving an injected failure end-to-end.
-- **Options:** Add an external OTLP stack, use only CloudWatch, or add a small
-  local observability implementation with an exporter boundary.
+- **Options:** Add OpenTelemetry SDK/exporters, use only existing CloudWatch
+  infrastructure, or add a small dependency-free local implementation.
 - **Choice:** Add a local RED snapshot and trace-span collector, exposed from
   the Express emulator at `GET /observability`. Existing correlation IDs remain
-  the trace key. CloudWatch definitions remain the AWS deployment boundary.
+  the trace key. Do not add a new dependency without explicit approval.
 - **Trade-off:** This proves local instrumentation and injected failure
-  correlation, but not an OTLP collector, real tracing exporter, or AWS alarm
-  delivery.
+  correlation, but it does not fulfill OpenTelemetry export, a live dashboard,
+  or AWS alarm delivery. Those remain explicitly incomplete.
 
 ## Phase 5: centralized network resilience
 
