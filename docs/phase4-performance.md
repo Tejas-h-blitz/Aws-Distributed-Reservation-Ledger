@@ -6,12 +6,23 @@ The baseline and optimization runs use 500 reserve requests in batches of 50,
 with in-memory repositories and rate limiting bypassed because no client ID is
 present.
 
-Current baseline evidence:
+Commit-qualified evidence:
 
-- Phase 0 local baseline: 357.91 RPS, p50 112 ms, p95 201 ms, p99 213 ms.
+- Phase 0 local baseline:
+  357.91 RPS, p50 112 ms, p95 201 ms, p99 213 ms.
+- After the logging optimization:
+  335.57 RPS, p50 97 ms, p95 449 ms, p99 511 ms
+  (`v1-load-2026-11-24T12-19-02-732Z.json`).
+- Hot-key test:
+  297.27 RPS, p50 90 ms, p95 603 ms, p99 677 ms
+  (`hot-key-2026-11-24T12-19-02-922Z.json`).
+
+Exploratory evidence (not used as the commit-qualified before/after result):
+
 - Normal post-Phase-2/Phase-3 run: 55.05 RPS, p50 252 ms, p95 3292 ms,
   p99 3317 ms.
-- Run with stdout redirected: 124.84 RPS, p50 343 ms, p95 611 ms, p99 637 ms.
+- Run with stdout redirected: 124.84 RPS, p50 343 ms, p95 611 ms,
+  p99 637 ms.
 - Working-tree logging optimization: 506.59 RPS, p50 65 ms, p95 230 ms,
   p99 233 ms.
 
