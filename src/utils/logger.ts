@@ -40,8 +40,11 @@ export const logger = {
       ...metadata
     };
 
-    // Output JSON string to stdout (standard production configuration for CloudWatch)
-    console.log(JSON.stringify(logEntry));
+    // Avoid synchronous stdout serialization in local load tests. AWS/production
+    // logging remains unchanged, while integration tests can subscribe listeners.
+    if (process.env.LOCAL_TESTING !== "true" || listeners.length > 0) {
+      console.log(JSON.stringify(logEntry));
+    }
 
     // Notify listeners (for unit/integration testing assertions)
     for (const listener of listeners) {
