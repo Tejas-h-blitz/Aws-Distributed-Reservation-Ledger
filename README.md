@@ -1,135 +1,64 @@
-# Event-Driven Distributed Reservation & Ledger Engine (ED-DRLE)
+# ED-DRLE v2
 
-ED-DRLE is a high-concurrency, fault-tolerant inventory reservation and transaction ledger engine built with AWS best practices. Designed for high availability, transactional consistency (ACID), and robust rate limiting, the engine handles concurrency stress, network chaos, and downstream database failures.
+ED-DRLE is a TypeScript learning project for reservation workflows, inventory
+consistency, saga compensation, resilience, and observability. The repository
+contains AWS CDK declarations and a local Express simulator; passing local
+tests does **not** mean the AWS stack has been deployed or verified.
 
-*This project features a **Zero-Cloud-Cost Local Integration Simulator** that mimics AWS API Gateway, EventBridge, DynamoDB Streams, and Standard Step Functions locally—enabling comprehensive integration and chaos testing.*
+## Verified stack
 
----
- 
-## 1. System Architecture
+- TypeScript / Node.js; CDK declares Node.js 20 Lambda runtime.
+- AWS CDK v2 infrastructure source.
+- Redis inventory, DynamoDB holds/fallback, and PostgreSQL ledger adapters are
+  present in source. The PostgreSQL code uses process-local `pg.Pool`.
+- The ordinary test suite uses in-memory adapters and an in-process saga
+  simulator. It does not connect to Redis, PostgreSQL, DynamoDB Local,
+  LocalStack, or AWS.
 
-```mermaid
-graph TD
-    Client[Client / Load Driver] -->|POST /reserve| APIGW[API Gateway]
-    
-    subgraph Ingress & Synchronous Path
-        APIGW -->|1. Token Bucket Ingress Protection| RateLimit{Rate Limiter}
-        RateLimit -->|Allow & Bind Correlation ID| HoldLambda[Hold Lambda]
-        RateLimit -->|Reject: HTTP 429| Client
-        HoldLambda -->|2. Idempotency Check| IdempotencyDB[(DynamoDB: Idempotency)]
-        HoldLambda -->|3. Atomic Lua Decr| RedisLive[(Redis Counter)]
-        HoldLambda -->|4. Degraded Fallback Decr| FallbackDB[(DynamoDB: InventoryCounters)]
-        HoldLambda -->|5. Conditional Write| HoldsDB[(DynamoDB: ActiveHolds)]
-    end
+## Run locally
 
-    HoldsDB -->|DynamoDB Stream| StreamPub[Stream Publisher Lambda]
-    StreamPub -->|Publish HoldCreated| EB[EventBridge Custom Bus]
-    
-    subgraph Asynchronous Saga Orchestration
-        EB -->|Trigger Saga| SFN[Saga Step Functions]
-        SFN -->|Invoke| PaymentMock[Payment Gateway]
-        SFN -->|Success Branch| LedgerWriter[Ledger Writer Lambda]
-        SFN -->|Failure Branch: Revert Stock| Compensate[Compensate Lambda]
-        LedgerWriter -->|Commit ACID Transaction| Postgres[(PostgreSQL Ledger)]
-        LedgerWriter -->|OCC Update status=SETTLED| HoldsDB
-        Compensate -->|Revert stock counter| RedisLive
-        Compensate -->|status=CANCELLED| HoldsDB
-    end
-
-    subgraph Reconciliation & Audit
-        S3Bucket[S3 Settlement Bucket] -->|s3:ObjectCreated| Ingestion[Settlement Ingestion Lambda]
-        Ingestion -->|Start Execution| AuditSFN[Audit Step Functions]
-        AuditSFN -->|Invoke Reconciler| AuditReconciler[Audit Reconciler Lambda]
-        AuditReconciler -->|Query Candidates| Postgres
-        AuditReconciler -->|Fuzzy Audit Matcher| LLM[Audit Reasoner]
-        AuditReconciler -->|Discrepancy: Pause & SNS Alert| SNS[SNS Slack Topic]
-        APIApprove[POST /audit/approve] -->|Resume SFN TaskToken| AuditSFN
-        APIApprove -->|status=RECONCILED| Postgres
-    end
-```
-
----
-
-## 2. Distributed Resiliency & Fault-Tolerance Mechanisms
-
-The architecture is explicitly designed to handle standard distributed failure modes:
-
-### 2.1 Blast Radius Mitigation (Ingress Rate Limiting)
-* **Design Pattern**: Client-based Token Bucket Rate Limiting.
-* **Mechanism**: To prevent downstream database starvation, incoming reservation requests are throttled at the ingress. The bucket restricts spikes to 10 requests with a refill rate of 2 tokens/sec per client ID, returning `HTTP 429 Too Many Requests` with a `Retry-After` header when depleted.
-
-### 2.2 Distributed Observability & Trace Correlation
-* **Design Pattern**: Trace Context Propagation via `AsyncLocalStorage`.
-* **Mechanism**: Structured JSON logging is enforced across the system. The API Gateway injects/reads a case-insensitive `traceId` (Correlation ID) which propagates across EventBridge message boundaries and async thread limits, providing unified tracking from reservation holds through payment, ledger settlement, and saga rollback.
-
-### 2.3 Orphaned Decrements & Redis Drift Reconciliation
-* **Design Pattern**: Write Compensation & Asynchronous Reconciliation.
-* **Mechanism**: If the Redis counter decrements but the subsequent DynamoDB `ActiveHolds` write fails (e.g., client timeout), a stock leak occurs. The handler executes a synchronous compensation to increment the counter back. Additionally, an EventBridge cron-scheduled Lambda reconciles cache counts with database holds to eliminate drift.
-
-### 2.4 Graceful Degradation (Redis Outage Fallback)
-* **Design Pattern**: Fail-safe Storage Fallback with Circuit Breakers.
-* **Mechanism**: If the Redis primary counter cluster becomes unreachable, a circuit breaker trips, and the execution gracefully degrades to a persistent DynamoDB table using conditional write expressions (`UPDATE InventoryCounters SET RemainingStock = RemainingStock - 1 WHERE RemainingStock > 0`).
-
-### 2.5 ACID Consistency & Saga Rollback
-* **Design Pattern**: Orchestrated Saga Pattern.
-* **Mechanism**: Step Functions orchestrate payments. Upon processor failures, SFN initiates compensatory logic via a `CompensateLambda` that transitions DynamoDB holds to `CANCELLED` and safely increments inventory stock back.
-
----
-
-## 3. Architectural Trade-offs & Cost Optimization (AWS Frugality)
-
-### 3.1 Step Functions: Standard vs. Express (Cloud Cost Optimization)
-* **Standard SFN (Audit Pipeline)**: Supports `.waitForTaskToken` (critical for human-in-the-loop review) and long execution windows (up to 1 year).
-* **Express SFN (Happy Path Sagas)**: Used to replace high-throughput happy path Standard workflows, reducing execution costs by **94%** (saving ~$29,000/month at 305M monthly transactions).
-
-### 3.2 Concurrency Control: Optimistic (OCC) vs. Pessimistic Locking
-* **Decision**: Utilized DynamoDB Version Numbers for Optimistic Concurrency Control (OCC) instead of pessimistic table locks.
-* **Trade-off**: OCC assumptions yield lower write latency and eliminate database connection pool exhaustion. Mismatched updates are resolved through automatic exponential backoff retries.
-
----
-
-## 4. Local Verification & Verification Pipelines
-
-The test suite runs 8 integration pipelines simulating real-world workloads and edge cases:
-
-```bash
+```powershell
+npm ci
+npm run build
 npm test
-
-Local emulated API Gateway server running on port 3000...
-
-=== 1. Concurrency Test ===
-Asserts exactly 1 reservation succeeds out of 50 concurrent requests at 1 unit of stock.
-Outcome: PASSED
-
-=== 2. Idempotency Test ===
-Asserts request retries with identical keys return cached responses without duplicate side effects.
-Outcome: PASSED
-
-=== 3. Chaos Test (Redis Outage Fallback) ===
-Trips circuit breaker to test database fallback counter updates under high concurrency.
-Outcome: PASSED
-
-=== 4. Saga Compensation Test ===
-Injects payment failures and asserts automatic saga rollbacks and inventory counter returns.
-Outcome: PASSED
-
-=== 5. Audit Pause Test (Human-in-the-Loop) ===
-Verifies fuzzy matcher discrepancy pauses, SNS alerts, and task resume via manager API.
-Outcome: PASSED
-
-=== 6. Rate Limiting Test ===
-Asserts client token depletion triggers HTTP 429 throttling while isolated clients succeed.
-Outcome: PASSED
-
-=== 7. Observability & Tracing Test ===
-Asserts JSON logs carry matching Correlation IDs across asynchronous saga steps.
-Outcome: PASSED
-
-=== 8. Load Test & Latency Profiling ===
-Fires 500 reservation holds, profiling throughput and latency percentiles.
-  - Throughput: 229.67 RPS
-  - p50 Latency: 213 ms | p95 Latency: 315 ms | p99 Latency: 316 ms
-Outcome: PASSED
-
-✅ SUCCESS: ALL 8 VERIFICATION TEST PIPELINES COMPLETED SUCCESSFULLY!
+npm run test:phase6
 ```
+
+`npm test` starts the local API simulator and runs its integration pipelines.
+`npm run test:phase6` runs focused RED metrics, trace propagation, injected
+failure, bounded-retention, and exporter checks. `npm run test:otel` runs the
+console-exporter test in isolation.
+
+## Architecture and evidence
+
+- [Current design and boundaries](docs/v2-design.md)
+- [v1-to-v2 comparison](docs/v1-v2-comparison.md)
+- [Benchmark report](docs/benchmark-report.md)
+- [Resume worksheet—verified claims only](docs/resume-worksheet.md)
+- [Phase 0 as-is v1 audit](docs/as-is-architecture.md)
+- [Phase decisions](docs/decisions.md) and [failure evidence](docs/failures.md)
+
+The committed performance results are labeled **local-in-memory**. The baseline
+script measures 500 reserve requests in batches of 50 with local rate limiting
+bypassed. It is not a Redis, PostgreSQL, DynamoDB, or AWS capacity result. Do
+not use output from the ordinary test suite's load pipeline as a benchmark;
+that output is not saved with `/bench` provenance.
+
+## Known limits
+
+- DynamoDB idempotency acquire/complete remains unimplemented; payload-bound
+  idempotency is verified only with the memory adapter.
+- Expiry reconciliation is a local/model behavior, not a durable Redis and
+  DynamoDB consistency protocol. The Redis key TTL defaults to 24 hours.
+- Compensation is replay-safe in the tested memory path, but the hold update
+  and inventory return are not crash-atomic across stores.
+- `pg.Pool` is process-local. The CDK stack does not define RDS or RDS Proxy.
+- Fault injection is an in-memory model, not live network or AWS fault
+  injection.
+- OpenTelemetry console export is local and opt-in
+  (`OTEL_CONSOLE_EXPORTER=true`). No remote collector, AWS export, deployed
+  dashboard, or alert delivery has been verified.
+- The stated 10,000 RPS target is unverified.
+
+See [Phase 7 design](docs/v2-design.md) for the full evidence and limitation
+breakdown before making deployment or scale claims.

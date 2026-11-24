@@ -17,6 +17,12 @@ Commit-qualified evidence:
   297.27 RPS, p50 90 ms, p95 603 ms, p99 677 ms
   (`hot-key-2026-11-24T12-19-02-922Z.json`).
 
+The commit-qualified logging-change result has lower throughput and higher
+p95/p99 latency than the baseline. Since the runs use different source
+commits, this evidence does not establish a controlled gain or attribute the
+observed differences to the logging change. See the
+[benchmark report](benchmark-report.md) for interpretation and raw files.
+
 Exploratory evidence (not used as the commit-qualified before/after result):
 
 - Normal post-Phase-2/Phase-3 run: 55.05 RPS, p50 252 ms, p95 3292 ms,

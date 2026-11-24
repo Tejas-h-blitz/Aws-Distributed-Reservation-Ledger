@@ -1,5 +1,20 @@
 # Decisions
 
+## Phase 7: evidence-led project documentation
+
+- **Problem:** The README still presented stale, unqualified load numbers and
+  implied production/AWS behavior that the local tests do not exercise.
+- **Options:** Rewrite the README as the only source of project detail; keep
+  the v1 audit and replace its historical context; or preserve that audit and
+  add separate current-design, benchmark, comparison, and resume documents.
+- **Choice:** Keep the v1 audit historical, make the README an accurate entry
+  point, and add separate v2 design, benchmark, v1-v2 comparison, and
+  verified-claims worksheet documents. State local/AWS evidence boundaries and
+  unresolved issues in each relevant document.
+- **Trade-off:** The documentation is easier to audit and avoids blending
+  source declarations with tested behavior. No docs test or AWS deployment is
+  introduced; cloud behavior remains unverified.
+
 ## Phase 6: local RED metrics and trace spans
 
 - **Problem:** Structured logs existed, but there was no local RED snapshot or

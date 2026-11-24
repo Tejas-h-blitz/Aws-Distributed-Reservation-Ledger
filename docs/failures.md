@@ -1,5 +1,17 @@
 # Failures and Reproduction Status
 
+## Phase 7 documentation
+
+The original README's `229.67 RPS` / `315 ms p95` figures had no committed
+provenance and contradicted the commit-qualified local results. Removed those
+claims, labeled the existing result files as local-in-memory, and added a
+benchmark report that explicitly rejects an apples-to-apples optimization
+claim. Added a current design/evidence map, a v1-v2 comparison, and a
+resume-claim worksheet tied to existing test and benchmark artifacts.
+
+This phase changes documentation only; there is no documentation test suite.
+The benchmark values in the report link to their committed raw JSON outputs.
+
 ## Phase 6 observability
 
 The local RED/span unit test, W3C parent-propagation plus injected-payment
