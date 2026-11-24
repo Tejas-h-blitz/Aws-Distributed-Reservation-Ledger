@@ -2,20 +2,28 @@
 
 ## Phase 0 audit (2026-11-24)
 
-This entry records source-inspection evidence. It does not claim that the
-reproduction tests have run.
+The three applicable local reproductions were run with Node `v22.17.1` on
+Windows and failed against v1 as intended. No production source code was
+changed.
 
 | Issue | What breaks / why | How found | Runtime reproduction |
 |---|---|---|---|
-| Duplicate compensation | Each invocation increments the selected inventory store; a versioned hold status update does not guard the increment. | Inspected `src/handlers/compensate.ts` and `src/repository/hold.dynamodb.ts`. | Not run yet. |
-| Expired hold counted active | Reconciliation includes all `PENDING`/`SETTLED` holds without comparing expiration to current time. | Inspected `src/handlers/reconciliation.ts` and `src/repository/hold.interface.ts`. | Not run yet. |
-| Redis inventory key retention | Inventory writes do not set a TTL; no cleanup path is present in the repository. | Inspected `src/repository/inventory.redis.ts`. | Not run yet; Docker is not installed on the audit host. |
-| RDS Proxy / pooling premise | `pg.Pool` exists, but CDK provisions neither RDS nor RDS Proxy; Compose PostgreSQL is local. | Inspected `src/repository/ledger.postgres.ts`, `docker-compose.yml`, and `infra/lib/ed-drle-stack.ts`. | No missing-pooling failure to reproduce; the supplied claim is partly contradicted by the code. |
+| Duplicate compensation | Each invocation increments the selected inventory store; a versioned hold status update does not guard the increment. | `tests/phase0/compensation-idempotency.test.ts` invokes compensation twice. | Failed as expected: actual stock `2`, expected `1`. |
+| Expired hold counted active | Reconciliation includes all `PENDING`/`SETTLED` holds without comparing expiration to current time. | `tests/phase0/expired-hold-reconciliation.test.ts` seeds an expired pending hold. | Failed as expected: actual Redis-model stock `0`, expected `1`. |
+| Redis inventory key retention | Inventory writes do not set a TTL; no cleanup path is present in the repository. | `tests/phase0/redis-inventory-retention.test.ts` captures repository-issued Redis commands with a fake client. | Failed as expected: no expiry command/option was issued. This is a command-shape unit test, not a live Redis TTL test; Docker is unavailable. |
+| RDS Proxy / pooling premise | `pg.Pool` exists, but CDK provisions neither RDS nor RDS Proxy; Compose PostgreSQL is local. | Inspected `src/repository/ledger.postgres.ts`, `docker-compose.yml`, and `infra/lib/ed-drle-stack.ts`. | No failing test added: “no client-side pooling” is false for this code; no RDS endpoint exists to assess proxy behavior. |
+| Cloud/local saga input contract | Stream event fields and Step Functions task state do not preserve the reservation fields required by payment, ledger, and compensation handlers. The local simulator supplies a different shape. | Inspected `src/handlers/stream-publisher.ts`, `infra/lib/ed-drle-stack.ts`, and the handler input checks. | Static finding only. Add a focused repro before changing this workflow; not part of the three run gap tests above. |
+
+The three reproduction commands exited with code 1 on commit
+`f283bfe` (`test: add reproducible v1 correctness failures`). Their assertion
+failures were the evidence sought; these are not unresolved test-run errors.
 
 ## Baseline measurement provenance
 
 The README's `229.67 RPS` / `315 ms p95` and ignored
-`test-results/metrics.json` are inconsistent and do not include a date, commit,
-or environment. Neither has been used as a verified measurement. The current
-load test is an in-memory local simulation and is not yet a script under
-`/bench`; do not use either artifact as an AWS performance result.
+`test-results/metrics.json` are inconsistent and lack date, commit, and
+environment provenance. The committed local baseline at
+[`bench/results/v1-load-2026-11-24T10-56-43-480Z.json`](../bench/results/v1-load-2026-11-24T10-56-43-480Z.json)
+records `357.91 RPS`, `p50 112 ms`, `p95 201 ms`, `p99 213 ms`, and 500 HTTP
+202 responses with zero errors. It uses in-memory adapters, bypasses the rate
+limiter, and is not an AWS or Docker-backed measurement.

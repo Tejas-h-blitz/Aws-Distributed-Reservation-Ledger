@@ -13,8 +13,22 @@
   numbers remain unverified until produced by a committed `/bench` script with
   provenance.
 - **Trade-off:** This avoids presenting stale or untraceable numbers as results,
-  but defers a valid performance baseline until the harness is committed and
-  run.
+  and makes the local-only baseline reproducible; it does not provide a cloud
+  capacity estimate.
+
+## Phase 0: baseline workload
+
+- **Problem:** The existing benchmark measures 500 requests in sequential
+  batches of 50 but does not preserve provenance or raw latency samples.
+- **Options:** Change the v1 load profile during the audit; or retain its
+  request count, batch size, local in-memory adapters, and rate-limit bypass
+  while adding provenance and saving samples.
+- **Choice:** Preserve the existing workload and label the result
+  `local-in-memory`; save the commit, date, environment, status counts, and
+  latency samples in `/bench/results`.
+- **Trade-off:** This enables an apples-to-apples local comparison with the
+  existing test while explicitly not representing Redis, PostgreSQL, AWS, or
+  the target production capacity.
 
 ## RDS / connection-pooling claim
 

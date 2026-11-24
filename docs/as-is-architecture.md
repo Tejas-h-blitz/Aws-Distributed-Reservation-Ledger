@@ -53,8 +53,6 @@ flowchart LR
     AuditSFN --> Audit[Audit Reconciler Lambda]
     Audit --> PG
     Audit --> SNS[SNS discrepancy topic]
-    Approve[Audit approval API] --> AuditSFN
-    Approve --> PG
 ```
 
 The synchronous reserve path checks a token-bucket limiter, performs an
@@ -68,6 +66,19 @@ The audit path ingests settlement objects from S3 and uses a separate Standard
 Step Functions workflow. CDK also defines an EventBridge reconciliation rule
 with a five-minute interval, but its event payload is hard-coded to
 `evt_concert_seat_1` and capacity `100`.
+
+The CDK API Gateway exposes only `POST /reserve`. The local Express emulator
+also has `/audit/upload`, `/audit/pending`, and `/audit/approve` routes; they are
+not wired into API Gateway by the checked-in stack.
+
+There is also a cloud/local saga contract mismatch to investigate before
+relying on the AWS workflow. The stream publisher emits `HoldID` in EventBridge
+detail, while the payment handler expects a top-level `ReservationID`. The CDK
+target has no explicit detail-to-input mapping. In addition, the payment task's
+`outputPath: "$.Payload"` replaces the state with the payment response, so the
+ledger and compensation tasks do not receive the original reservation fields
+their handlers require. The local simulator passes those fields directly and
+therefore does not verify this CDK workflow contract.
 
 The local simulator is a separate execution path: Express calls the hold
 handler and starts the in-process saga simulator; tests use memory repositories.
@@ -108,8 +119,7 @@ AWS RDS/Aurora deployment and measuring connection pressure.
 | No RDS Proxy / pooling | `pg.Pool` is present; no RDS or RDS Proxy resource is defined. This claim needs correction rather than an invented failing test for absent client pooling. |
 
 These are source-inspection findings, not yet test-run reproductions. Phase 0's
-failing reproductions and benchmark execution must be reported separately from
-this static audit.
+failing reproductions and benchmark execution are recorded separately below.
 
 ## Load-test evidence and 10,000 RPS target
 
@@ -121,9 +131,14 @@ metadata.
 
 The README claims `229.67 RPS` and `p95 315 ms`, while the checked-in ignored
 `test-results/metrics.json` currently contains `600.2400960384153` throughput
-and `p95 131 ms`. These artifacts have no verifiable run provenance, so neither
-number is accepted here as a measured baseline. The repository does not contain
-the stated 10,000 RPS target.
+and `p95 131 ms`. Neither has verifiable run provenance. A committed
+`/bench/v1-load.ts` run recorded in
+[`bench/results/v1-load-2026-11-24T10-56-43-480Z.json`](../bench/results/v1-load-2026-11-24T10-56-43-480Z.json)
+measured the local in-memory scenario at `357.91 RPS`, with `p50 112 ms`,
+`p95 201 ms`, `p99 213 ms`, and 500/500 HTTP 202 responses. Its recorded script
+commit is `8a06cbe3907434eaf1228a08ed74112c0a0fb742`; the run is dated
+`2026-11-24T10:56:43.480Z` UTC. This is a local simulator measurement, not an
+AWS result. The repository does not contain the stated 10,000 RPS target.
 
 For orientation only, dividing the README's unverified `229.67` figure into
 10,000 gives about `43.5x`. This is arithmetic on an unverified claim, not a
@@ -150,9 +165,10 @@ claim can be made from the available test evidence.
 - No AWS resources were created or queried.
 - Docker is not available on the audit host, so Compose-backed local services
   could not be exercised.
-- No source files were changed during this audit.
-- The repo has no `/bench` directory; creating and running a provenance-recording
-  load script must precede any accepted performance measurement.
-- The audit host's in-memory path can be tested without Docker, but benchmark
-  output must be produced only by a committed `/bench` script and saved under
-  `/bench/results` with its environment and commit metadata.
+- No production application source or infrastructure was changed during this
+  audit.
+- Docker is unavailable, so the benchmark uses the in-memory adapters and
+  bypasses the rate limiter, just as the existing v1 test does.
+- The committed local measurement is stored in `/bench/results` with date,
+  script commit, environment, status counts, and raw latency samples.
+- No benchmark has exercised AWS or the Compose services.
