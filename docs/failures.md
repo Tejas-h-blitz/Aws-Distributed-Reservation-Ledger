@@ -1,5 +1,12 @@
 # Failures and Reproduction Status
 
+## Phase 1 lifecycle modeling
+
+No production behavior was fixed in Phase 1. The service and tests only model
+states and allowed transitions. In particular, `PENDING -> COMPENSATED` can be
+validated without proving that compensation inventory increments occur exactly
+once; that requires conditional/idempotent compensation work in Phase 2.
+
 ## Phase 0 audit (2026-11-24)
 
 The three applicable local reproductions were run with Node `v22.17.1` on

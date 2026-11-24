@@ -1,5 +1,19 @@
 # Decisions
 
+## Phase 1: reservation lifecycle state machine
+
+- **Problem:** The hold record has an enum and handlers call status updates
+  directly, with no central definition of legal transitions.
+- **Options:** Keep the existing statuses and validate transitions in handlers;
+  add a dedicated transition service; or build an outbox-backed state machine.
+- **Choice:** Add a dedicated `HoldStateMachine` service over `HoldRepository`.
+  It allows `PENDING` to become `SETTLED`, `CANCELLED`, `EXPIRED`, or
+  `COMPENSATED`; terminal states are absorbing; repeated transitions to the
+  same state are idempotent no-op results.
+- **Trade-off:** This centralizes lifecycle rules without changing storage or
+  adding a new service/dependency. It does not yet enforce these rules inside
+  handlers or persist transition journals.
+
 ## Phase 0: evidence boundaries and as-is architecture
 
 - **Problem:** The README and supplied project context describe a production-like

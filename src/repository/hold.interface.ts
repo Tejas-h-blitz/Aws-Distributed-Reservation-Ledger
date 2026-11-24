@@ -1,9 +1,16 @@
+export type HoldStatus =
+  | "PENDING"
+  | "SETTLED"
+  | "CANCELLED"
+  | "EXPIRED"
+  | "COMPENSATED";
+
 export interface HoldRecord {
   HoldID: string;
   EventID: string;
   UserID: string;
   ExpirationTimestamp: number; // epoch timestamp in seconds
-  Status: "PENDING" | "SETTLED" | "CANCELLED";
+  Status: HoldStatus;
   Version: number; // for OCC
 }
 
