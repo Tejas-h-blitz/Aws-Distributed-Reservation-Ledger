@@ -1,5 +1,18 @@
 # Decisions
 
+## Phase 3: seeded fault-injection harness
+
+- **Problem:** Correctness claims need post-event invariant checks across
+  crashes, replay, throttling, and contention.
+- **Options:** Start with AWS resources, Docker-backed real services, or a
+  seeded in-memory event/model harness.
+- **Choice:** Use a deterministic in-memory harness with seed `424242`. It
+  checks capacity, terminal-state, no-double-booking, retry, expiry, and
+  compensation invariants after each scenario.
+- **Trade-off:** The harness proves state-machine behavior under modeled faults,
+  not network partitions, Redis durability, DynamoDB conditional-write semantics,
+  or AWS service behavior. Docker/AWS verification remains deferred.
+
 ## Phase 2: idempotency and bounded correctness fixes
 
 - **Problem:** Replayed compensation and expired holds could not be made safe

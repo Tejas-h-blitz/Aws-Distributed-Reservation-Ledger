@@ -1,5 +1,16 @@
 # Failures and Reproduction Status
 
+## Phase 3 fault-injection harness
+
+The seeded harness (`424242`) passed crash, duplicate/delayed/reordered events,
+retry storm, Redis-loss/fallback, DynamoDB-throttling, concurrent-contention,
+and expiry-reconciliation scenarios. It passed all capacity, terminal-state,
+no-double-booking, exact-stock-return, and no-leaked-active-hold checks.
+
+This evidence is local and in-memory only. It does not prove real network
+partitions, Redis loss, DynamoDB throttle behavior, PostgreSQL connection
+pressure, or AWS Lambda crash/restart semantics.
+
 ## Phase 2 correctness work
 
 - Duplicate compensation reproduction: passed after compensation became a
